@@ -494,7 +494,7 @@ climate <- do.call(rbind, df_list)
 
 ### import modeled data for p1
 
-file_paths <- list.files(path = "C:/DNDC/Result/Record/Site", pattern = "\\.txt$", full.names = TRUE) # "." means the files are in the working directory. It may need changing when I work with the DNDC file
+file_paths <- list.files(path = "C:/DNDC/Result/Record/Site", pattern = "\\.txt$", full.names = TRUE) 
 results <- do.call(rbind, lapply(file_paths, extract_info))
 mod_yield_p1 <- results %>%
   filter(year > 6) %>%
