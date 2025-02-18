@@ -1,0 +1,43 @@
+year,rotation,plot,crop_order,crop_type,grain_t_ha,grain_n_kg_ha,grain_c_kg_ha,straw_t_ha,straw_c_kg_ha,straw_n_kg_ha,biomass_c_kg_ha,biomass_n_kg_ha,c_n_ratio_grain,c_n_ratio_straw,c_n_ratio_biomass,notes
+2018,conv,1,1,corn,10.57,126.66,4450.61,9.68,4391.11,71.04,,,35,62,,
+2018,conv,2,1,corn,11.25,145.64,4738.54,9.83,4435.15,82.19,,,33,54,,
+2018,div,3,1,corn,11.05,133.96,4644.85,9.73,4431.1,72.69,,,35,61,,
+2018,div,4,1,corn,11.56,144.76,4880.62,9.94,4536.51,78.52,,,34,58,,
+2018,div,3,2,cover crop,0.057,,,,,,,,,,C:N ration for mix of rye and clover was 11.1 for P3 (0.4037/0.0365) and 9.9 for P4 (0.4003/0.0406),rye
+2018,div,4,2,cover crop,0.068,,,,,,,,,,,rye
+2018,div,3,3,cover crop,0.117,,,,,,,,,,,clover
+2018,div,4,3,cover crop,0.135,,,,,,,,,,,clover
+2019,div,3,1,cover crop,0.174,,,,,,0.0740718,0.0045936,,,16,rye
+2019,div,4,1,cover crop,NA,,,,,,,,,,,rye - no cc survied in plot 4 (neither clover nor rye)
+2019,div,3,2,cover crop,NA,,,,,,,,,,,clover
+2019,div,4,2,cover crop,NA,,,,,,,,,,,clover
+2019,conv,1,3,soybean,3.94,214.51,1979.23,5.48,2308.51,37.64,,,9,61,,
+2019,conv,2,3,soybean,3.85,214.09,1924.43,6.29,2653.31,43.69,,,9,61,,
+2019,div,3,3,soybean,3.64,204.17,1818.7,4.97,2119.05,37.69,,,9,56,,
+2019,div,4,3,soybean,3.88,216.05,1932.91,6.08,2588.47,44.15,,,9,59,,
+2020,conv,1,1,soybean,4.67,266.41,2290.2,5.27,2176.51,47.43,,,9,46,,values for soybean yield were updated based on estimations suggested by Claudia and Nirmani (original records + moisture adjustment of 10.5%); I deleted values for other variables as I could not find how to update them (did ot find values for C and N)
+2020,conv,2,1,soybean,4.58,260.97,2229.69,5.35,2209.55,48.15,,,9,46,,values for soybean yield were updated based on estimations suggested by Claudia and Nirmani (original records + moisture adjustment of 10.5%); I deleted values for other variables as I could not find how to update them (did ot find values for C and N)
+2020,div,3,1,winter wheat,6.73,96.05,2752.59,6.55,2888.55,45.85,,,29,63,,
+2020,div,4,1,winter wheat,6.31,93.59,2583.15,6.52,2855.76,52.16,,,28,55,,
+2020,div,3,2,cover crop,1.81,,,,,,734.129,39.78,,,18.5,"all crop - 4 CC; wheigth values correspond to the entire crops; I think C:N ratios correspond to the above ground biomass to all the crop BUT raddish; for raddish, shoot had 36.2% C and 2.1% N (averages), and root had 36.2% C, 1.3% N (average)"
+2020,div,4,2,cover crop,2.14,,,,,,870.614,44.921,,,19.4,"all crop - 4 CC; wheigth values correspond to the entire crops; I think C:N ratios correspond to the above ground biomass to all the crop BUT raddish; for raddish, shoot had 36.2% C and 2.1% N (averages), and root had 36.2% C, 1.3% N (average)"
+2021,conv,1,1,corn,10.83,,,,,,,,,,,
+2021,conv,2,1,corn,10.96,,,,,,,,,,,
+2021,div,3,1,cover crop,2.71,,,,,,,,,,,
+2021,div,4,1,cover crop,2.71,,,,,,,,,,,
+2021,div,3,2,corn,10.45,,,,,,,,,,,
+2021,div,4,2,corn,11.07,,,,,,,,,,,
+2021,div,3,3,cover crop,0.233,,,,,,,,,,,rye
+2021,div,4,3,cover crop,0.264,,,,,,,,,,,rye
+2021,div,3,4,cover crop,0.021,,,,,,,,,,,clover
+2021,div,4,4,cover crop,0.052,,,,,,,,,,,clover
+2022,conv,1,1,soybean,4.023,,,,,,,,,,,
+2022,conv,2,1,soybean,4.319,,,,,,,,,,,
+2022,div,3,2,soybean,4.19,,,,,,,,,,,
+2022,div,4,2,soybean,4.483,,,,,,,,,,,
+2023,conv,1,1,soybean,3.685,,,,,,,,,,,
+2023,conv,2,1,soybean,3.77,,,,,,,,,,,
+2023,div,3,1,winter wheat,4.821,,,,,,,,,,,
+2023,div,4,1,winter wheat,5.16,,,,,,,,,,,
+2023,div,3,2,cover crop,0.672,,,,,,,,,,,all crop - 4 CC
+2023,div,4,2,cover crop,0.691,,,,,,,,,,,all crop - 4 CC

@@ -1,0 +1,269 @@
+LYSIMETER TREATMENTS AND IDENTIFICATION
+
+Twelve lysimeters were treated with a diverse cropping system:
+
+E1 (H1L1; S1 C2 W)
+C1 (H1L3; S2 C2)
+C3 (H1L5; S2 C2 W)
+E3 (H1L6; S1 C2)
+E4 (H2L1; S1 C2)
+C4 (H2L2; S2 C2 W)
+C5 (H2L4; S2 C2)
+E6 (H2L5; S1 C2 W)
+C7 (H3L1; S2 C2)
+E7 (H3L2; S1 C2)
+E8 (H3L3; S1 C2 W)
+C9 (H3L6; S2 C2 W)
+
+A 'W' in the treatment code marks any lysimeter treated with winter warming.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SOIL CHARACTERISTICS
+
+Each lysimeter contains either Elora Loam (E; S1) or Cambridge Sand (C; S2).
+
+Elora (S1) soils extracted near 43° 38' 20.2" N, 80° 24' 36.9" W,
+	-Gleyed Gray-Brown Luvisol.
+	
+Cambridge (S2) soils extracted near 43° 27' 27.6'' N 80° 20' 47.5'' W,
+	-Eluviated Melanic Brunisol
+
+Each lysimeter is within a 3 x 10 m plot with similar agricultural 
+treatment.
+
+Yield is harvested from the circular, 1 m^2 lysimeter surface.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+TIMELINE
+
+------- 2016 ---------------------------------------------------------------
+
+	Jul 07-16/2016:
+			Soybean planted. Summer crop.
+
+	Oct 18/2016:
+			Soybean harvest. Yield averaged among diverse plots
+			was 2.45 Mg/ha. Plant dry matter (without grain)
+			was 2.51 Mg/ha.
+
+	Oct 18/2016:
+			Diverse plots left fallow for winter season.
+------- 2017 ---------------------------------------------------------------
+
+	Apr 26/2017:
+			Wheat planted in diverse plots. Fertilized *(25/26th)* prior (prod. 
+			2020-10-10) at a rate of 67 kg N/ha (300 lb product/acre).
+
+	May 29/2017:
+			Weeded diverse plots, removed rocks from lysimeters
+			and thinned wheat.
+
+	Jun 01/2017:
+			Reseeded wheat plots and weeded lysimeters.
+
+	Jul 31/2017:
+			Wheat harvest from plots surrounding lysimeters.
+
+	Aug 01/2017:
+			Wheat harvest from lysimeter surface. Grain yield was
+			1.71 Mg/ha on average.
+
+	Aug 19-24/2017:
+			Planted cover crop (oats, cereal rye, crimson clover,
+			daikon radish) for winter season.
+
+	Aug 25/2017:
+			Diverse plots with cover crops fertilized with urea
+			at 50 kg N/ha. Following urea application lysimeters
+			were irrigated with 4 L water per m^2.
+-------2018-----------------------------------------------------------------
+
+	May 14/2018:
+			Harvested cover crop. Avg yields of crimson clover
+			were 8.14 g and 35.71 g from control and winter-warmed
+			plots, respectively. Cereal rye averaged 39.53 g and
+			86.03 g from control and warmed plots.
+
+	May 18/2018:
+			Corn planted. 8 plants/m2 (80,000 plants/ha).
+			
+	May 19/2018:
+			Fertilizer (prod. 11-52-0) applied in row at a rate of
+			168 kg/ha (150 lbs/acre).
+			
+	May 22/2018:
+			Urea applied with labeled nitrogen at a rate of 74 kg N/ha.
+			
+	May 23-24/2018:
+			Corn planted on surrounding plots.
+			
+	May 24/2018:
+			Returning cover crop residue to lysimeter surface.
+			
+	Jun 05/2018:
+			Corn did not establish. Tilled all plots surrounding lysimeters.
+			
+	Jun 06/2018:
+			Re-planted all plots surrounding lysimeters with DKC30 (short-season corn).
+			
+	Jun 11/2018:
+			Lysimeters watered (10L).
+			
+	Jun 21/2018:
+			Interseeding gaps in corn.
+			
+	Jun 25/2018:
+			Fertilized corn in surrounding plots with Super U.
+			
+	Jun 26/2018:
+			Planted cover crop. (which?) in between corn.
+			
+	Jun 27/2018:
+			Urea applied in water at a rate of 77 kg N/ha. Surrounding
+			plots fertilized with 150 kg N/ha (in water).
+			
+	Jul 25/2018:
+			Corn height averages 164 cm. Plants at stage V14-V16.
+			*cover crop did not establish (?) Cover crop re-planted.
+			
+	Aug 07/2018:
+			Corn height averages 183 cm. Plants at stage R2.
+			
+	Oct 03/2018:
+			Cover crop (cereal rye) planted due to low establishment of
+			other cover crops. Approx 82 kg/ha.
+			
+	Oct 05/2018:
+			Planting diverse plots with 82 kg/ha cereal rye.
+			
+	Oct 24/2018:
+			Back of plots harvested (combine). Corn left on lysimeter
+			surface and immediately surrounding plot.
+			
+	Oct 30/2018:
+			Harvested corn from lysimeters. All plants clipped at surface,
+			dried at 60C. Diverse treatments averaged 8.6 Mg/ha grain, and
+			14.5 Mg/ha plant biomass.
+			
+	Nov 19/2018:
+			Returned corn residue to lysimeters. Corn in surrounding plots
+			clipped at surface and residue removed.
+			
+	Nov 20/2018:
+			Heaters established on heated plots (treatment code 'W').
+------- 2019 ---------------------------------------------------------------
+
+	Jun 06/2019:	
+			Harvested cover crops. 
+	Jun 06/2019:
+			Lysimeters manually cultivated. Fertilizer applied: 4-19-38 at 23.5 g/m2 (sources: MAP and MOP).  Fertilizer worked in to a depth of 5-10 cm.	
+	
+	Jun 07-12/2019:
+			Soy planted (target of 52 plants/m2).
+
+	Jul 19/2019:	
+			Sprayed weeds in plots.
+
+	Jul 17/2019:
+			Plant height averages 28cm.
+
+	Jul 22/2019:	
+			Plant height averages 34cm. 
+
+	Jul 29/2019:
+			Plant height averages 39cm.
+
+	Aug 9/2019: 
+			Plant height averages 47cm.
+
+	Aug 16/2019:
+			Plant height averages 47cm.
+
+	Aug 23/2019:
+			Plant height averages 48cm.
+
+	Sept 21/2019: 
+			Plant height averages 47cm.
+
+	Sept 23-27/2019:
+			Collected soy leaves from lysimeters.
+	
+	Sept 30/2019: 
+			Harvested soybeans. 
+
+	Oct 10/2019: 
+			Planted winter wheat (7" rows, 1" deep). Returned soybean residue to lysimeters (stalks/leaves). 
+	
+	Oct 11/2019:	
+			Planted diverse plots around lysimeters. 
+
+	Oct 22/2019:	
+			Winter wheat has emerged in diverse lysimeters. 
+------- 2020 ---------------------------------------------------------------
+
+	Apr 02/2020:
+			Urea applied to diverse lysimeters. 
+
+	Apr 24/2020:
+			Plant height averages ****
+
+	Apr 24/2020:
+			Applied Urea to diverse plots. 
+
+	May 05/2020:
+			Seeded areas around lysimeters with spring wheat. 
+
+	May 25/2020:
+			Plant height averages ****. Note that some LYSI are yellow, stunted, forming grain. Only heated sand lysimeters are forming grain.
+	
+	May 27/2020:
+			Applied Roundup and tilled plots. 
+
+	Jun 06/2020:
+			Planted soybeans. 
+
+	Jun 09/2020: 
+			Plant height averages ****
+
+	Jun 12/2020: 
+			Plant height averages ****
+
+	Jul 14/2020: 
+			Plant height averages ****
+
+	Jul 23/2020: 
+			Harvested wheat. 
+
+	Aug 01/2020:
+			Sprayed glyphosate (Round Up Weather Maxx) on wheat plots and wheat lysimeters.
+ 
+	Aug 14/2020: 
+			Planted cover crop in diverse lysimeters. 
+
+	Sep 01/2020:
+			Reseeded oats and rye in diverse lysimeters. 
+
+	Sept 04/2020:
+			Planted cover crops around diverse lysimeters. 
+
+	Sept 22/2020: 
+			Harvested soybeans. 
+------- 2021 ---------------------------------------------------------------
+
+	May 17/2021:
+			Corn planted.
+
+	May 18/2021:
+			Cover crops cut down in plots.
+
+	May 19/2021:
+			Plots tilled.
+
+	May 20/2021:
+			Corn planted in surrounding plots.
+
+	Jun 02/2021:
+			Transplanted 3 corn plants from H2L4 to H3L1. 
+			Thinned remaining lysimeters to ~8 plants per lysimeter. 

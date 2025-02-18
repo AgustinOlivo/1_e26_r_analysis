@@ -1,0 +1,110 @@
+  -------------------------------------------------------------------------------------
+  ANNUAL REPORT:   Site p1_conv_new     Year 5     Fri Sep 20 12:46:19 2024
+
+  -------------------------------------------------------------------------------------
+  SOIL SECTION: Unit kg C or N/ha 
+  -------------------------------------------------------------------------------------
+  SOM pools  -----Litter-----  -----Humads-----  -----Humus------  -----Total-----
+               C        N        C        N        C        N        C        N   
+  Day 1    15411.17   162.51  16774.09  1677.41 111347.05  11134.71  144031.23  12974.63
+  Day 365  18756.48   196.39  16547.78  1654.78 111534.32  11153.43  147338.78  13004.60
+  -------------------------------------------------------------------------------------
+  Inorganic N pools in kg N/ha
+
+                   NO3-     NH4+    NH3(w)   Urea     NO(w)    clay-NH4   N2O+N2   Total
+  Day 1           95.54     0.10     0.00     0.00     0.00     0.22     0.00    95.86
+  Day 365        108.07     0.28     0.00     0.00     0.00     0.47     0.02   108.83
+  -------------------------------------------------------------------------------------
+  Fluxes                         C (kg C/ha/yr)              N (kg N/ha/yr)
+
+  Inputs -------------------------------------------------------------------------------
+  Manure                               0.00			     0.00
+  Shoot litter                      4579.58			    50.64
+  Root litter			    2543.39                         28.12
+  Root exudation		     134.57							
+  Rain-N deposit                                                     4.80
+  Irrigation N input                                                 0.00
+  Fertilizer-N                                                     150.00
+  Soil N fixation                                                    0.00
+
+  Outputs ------------------------------------------------------------------------------
+  Soil-CO2 emission                 3696.93
+  CH4 emission                        -0.98
+  Soil runoff                          0.00                          0.00
+  Soil leaching                      273.96                         30.22
+  Crop N uptake from soil                                          151.08
+  NH3 volatilization                                                 5.04
+  N2O                                                                2.69
+  NO                                                                 0.39
+  N2                                                                 1.20
+  Indirect N2O                                                       0.00
+  Indirect N2                                                        0.00
+  -------------------------------------------------------------------------------------
+  Mineralization: 3808.2 kg C/ha and  112.2 kg N/ha;   Soil C/N ratio: 11.3
+  --------------------------------------------------------------------------------------
+  Depth (cm)         kg C/kg           kg C/ha		Soil_weight_kg/ha
+    0 - 10           0.0310             34776.58		1120400
+   10 - 20           0.0286             33337.74		1166697
+   20 - 30           0.0181             21790.17		1203735
+   30 - 40           0.0096             11571.83		1203735
+   40 - 50           0.0048              5939.05		1231513
+  -------------------------------------------------------------------------------------
+  CROP SECTION -99: Unit kg C or N/ha 
+  -------------------------------------------------------------------------------------
+  Cropping season	           1 
+  Crop name			Corn         
+  Planting date		         133 
+  Growing days		         147 
+  Growing season TDD	           0 
+  Water demand (mm)	      210.49 
+  Water uptake (mm)	      210.48 
+  Water stress		        0.81 
+  Crop N demand		      157.58 
+  Crop N from soil	      151.08 
+  Crop N from air NH3	        0.00 
+  Crop N fixation	        0.00 
+  Nitrogen stress	        0.87 
+
+  Annual crop biomass production:
+  Crop N (kg N/ha)	      151.08 
+  Crop C (kg C/ha)	     9596.08 
+  -- Grain C		     3815.64 
+  -- Leaf C		     2119.49 
+  -- stem C		     2119.49 
+  -- Root C		     1541.45 
+
+  Photosynthesis (kg C/ha)       11899.9
+  Shoot respiration               1544.9
+  Root respiration                 784.5
+  Crop NPP                        9596.1
+  NEE                            -5873.5
+  Stubble (kg C/ha)		  1173.1
+  Fruit cut (kg C/ha)		       0
+  Leaf cut (kg C/ha)		       0
+  Stem cut (kg C/ha)		       0
+  Root cut (kg C/ha)		       0
+  Livestock feed demand (kg C/ha)        0
+  Grazed biomass (kg C/ha)	         0
+  --------------------------------------------------------------------------------------
+  WATER SECTION: Unit mm water/year
+  -------------------------------------------------------------------------------------
+  Precipitation			960.50
+  Irrigation			0.00
+  Manure water			0.00
+  PET				1064.55
+  Transpiration			210.48
+  Soil evaporation		233.77
+  Run off			107.65
+  Leaching			335.20
+  Soil profile water:	Initial 790.54;	End: 780.45
+  Deep water pool   :	Initial 0.00;	End: 0.00
+  Mean wind speed (m/s) 	3.47
+  -------------------------------------------------------------------------------------
+  Soil P (kg P/ha): Day 1-- 202.55; Day 365-- 268.46
+  Fertilizer P (kg P/ha): 66.50
+  Manure P (kg P/ha): 0.00
+  P flux of crop uptake (kg P/ha): 0.00
+  P flux of runoff (kg P/ha): 0.31
+  P flux of leaching (kg P/ha): 0.28
+  P flux of residue incorporation (kg P/ha): 0.00
+  -------------------------------------------------------------------------------------
