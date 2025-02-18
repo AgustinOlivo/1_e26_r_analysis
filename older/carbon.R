@@ -21,21 +21,18 @@ setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_pro
 # install.packages("lubridate")
 # install.packages(c("Metrics", "hydroGOF"))
 # install.packages("ggh4x")
-# install.packages("writexl")
 
 # load packages 
 
 library(tidyverse)
-#library(dplyr)
+library(dplyr)
 library(readxl)
-#library(ggplot2)
+library(ggplot2)
 library(janitor)
-#library(lubridate)
+library(lubridate)
 library(Metrics)
 library(hydroGOF)
 library("ggh4x")
-library(writexl)
-
 
 # suggested colors for graphs
 c("#F0E442", "#D55E00","#CC79A7","#E69F00", "#0072B2", "#009E73","#56B4E9" , "#000000" ,"#999999")

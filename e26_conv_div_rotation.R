@@ -1,6 +1,7 @@
-######################################################
-########## analysis of carbon project data ###########
-######################################################
+#########################################################################
+########## analysis of diverse vs conventional rotation - E26 ###########
+#########################################################################
+
 
 ##################################
 ####### GENERAL #########
@@ -35,7 +36,9 @@ library(Metrics)
 library(hydroGOF)
 library("ggh4x")
 library(writexl)
+library(usethis)
 
+use_git()
 
 # suggested colors for graphs
 c("#F0E442", "#D55E00","#CC79A7","#E69F00", "#0072B2", "#009E73","#56B4E9" , "#000000" ,"#999999")
@@ -233,7 +236,6 @@ extract_info2 <- function(file_path) {
 ### import observed data crop yield
 
 obs_yield <- read_excel("data/measured_crop/obs_yield_e26_2025_02_06.xlsx", sheet = "obs_yield_main")
-#colnames(obs_yield)[1] <- "year"
 obs_yield$type <- "obs"
 obs_yield$grain_t_ha <- as.numeric(obs_yield$grain_t_ha)
 obs_yield$crop_yield_obs_kg_ha <- obs_yield$grain_t_ha*1000
@@ -266,8 +268,6 @@ obs_soil_wfps_p2 <- filter(obs_soil_wfps, plot == "P2")
 obs_soil_wfps_p3 <- filter(obs_soil_wfps, plot == "P3")
 obs_soil_wfps_p4 <- filter(obs_soil_wfps, plot == "P4")
 
-
-
 obs_soil_vwc <- read_excel("data/measured_vwc/e26_vwc.xlsx")
 obs_soil_vwc$date <- as.Date(obs_soil_vwc$date, format = "%m/%d/%Y")
 obs_soil_vwc$year <- year(obs_soil_vwc$date)
@@ -297,13 +297,13 @@ obs_soil_n_p4_long <- filter(obs_soil_n, plot == "P4")
 
 # graph to check observed data for soil N
 
-obs_soil_n %>% 
-  ggplot(aes(x = doy, y = nh4_kg_n_ha)) +
-  geom_col(color = "black") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-  facet_grid(cols = vars(year), rows = vars(plot)) +
-  ylab("Soil NH4 0-15 cm (kg N/ha)")
+# obs_soil_n %>% 
+#   ggplot(aes(x = doy, y = nh4_kg_n_ha)) +
+#   geom_col(color = "black") +
+#   theme_bw() +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+#   facet_grid(cols = vars(year), rows = vars(plot)) +
+#   ylab("Soil NH4 0-15 cm (kg N/ha)")
 
 # import observed data co2
 obs_co2 <- read.csv("data/measured_co2/co2_jevans_folder.csv", header = FALSE)
@@ -320,26 +320,15 @@ obs_co2_p3 <- filter(obs_co2, plot == "3")
 obs_co2_p3$doy <- as.numeric(obs_co2_p3$doy )
 
 # graph observed co2 data
-head(obs_co2_p1)
-obs_co2_p1 %>% 
-  ggplot(aes(x = doy, y = obs_nee)) +
-  geom_point(color = "black") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-  facet_wrap(year~., nrow = 4) +
-  ylab("NEE")
 
-# obs_co2_p1<- read_excel("data/measured_co2/P1_nondiverse_ObsCO2_2018-2021.xlsx", col_names = TRUE)
-# obs_co2_p1$obs_gpp <- obs_co2_p1$obs_gpp*(-1)
-# obs_co2_p1$date <- as.Date(obs_co2_p1$date, format = "%Y/%m/%d")
-# obs_co2_p1$date_jul <- yday(obs_co2_p1$date)
-# obs_co2_p1$year <- year(obs_co2_p1$date)
-# 
-# obs_co2_p3 <- read_excel("data/measured_co2/P3_Diverse_ObsCO2_2018-2021.xlsx", col_names = TRUE)
-# obs_co2_p3$obs_gpp <- obs_co2_p3$obs_gpp*(-1)
-# obs_co2_p3$date <- as.Date(obs_co2_p3$date, format = "%Y/%m/%d")
-# obs_co2_p3$date_jul <- yday(obs_co2_p3$date)
-# obs_co2_p3$year <- year(obs_co2_p3$date)
+# head(obs_co2_p1)
+# obs_co2_p1 %>% 
+#   ggplot(aes(x = doy, y = obs_nee)) +
+#   geom_point(color = "black") +
+#   theme_bw() +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+#   facet_wrap(year~., nrow = 4) +
+#   ylab("NEE")
 
 # import observed data n2o
 
@@ -354,90 +343,63 @@ obs_n2o_p2 <- filter(obs_n2o, obs_n2o$Plot == "P2")
 obs_n2o_p3 <- filter(obs_n2o, obs_n2o$Plot == "P3")
 obs_n2o_p4 <- filter(obs_n2o, obs_n2o$Plot == "P4")
 
-# loading management dates p1
+# loading management dates current P1 and P3 to include in graphs
 
 mgmt_dates_p1 <- as.data.frame( do.call( rbind, list(
-  c(131,2012), # plating
+  c(131,2012), # planting
   c(276,2012), # harvest
-  c(129,2013), # plating
+  c(129,2013), # planting
   c(295,2013), # harvest
-  c(146,2014), # plating
+  c(146,2014), # planting
   c(308,2014), # harvest
-  c(133,2015), # plating
+  c(133,2015), # planting
   c(300,2015), # harvest
   c(133,2016), # planting
   c(280,2016), # harvest
   c(138,2017), # planting
   c(313,2017), # harvest
-  c(140,2018), # plating
+  c(140,2018), # planting
   c(303,2018), # harvest
-  c(150,2019), # plating
+  c(150,2019), # planting
   c(273,2019), # harvest
-  c(143,2020), # plating
+  c(143,2020), # planting
   c(267,2020), # harvest
-  c(134,2021), # plating
+  c(134,2021), # planting
   c(307,2021), # harvest
-  c(138,2022), # plating
+  c(138,2022), # planting
   c(276,2022), # harvest
-  c(136,2023), # plating
+  c(136,2023), # planting
   c(277,2023) # harvest
 )))
 colnames(mgmt_dates_p1) <- c("doy", "year")
 
 mgmt_dates_p3 <- as.data.frame( do.call( rbind, list(
-  c(131,2012), # plating
+  c(131,2012), # planting
   c(276,2012), # harvest
-  c(129,2013), # plating
+  c(129,2013), # planting
   c(295,2013), # harvest
-  c(146,2014), # plating
+  c(146,2014), # planting
   c(308,2014), # harvest
-  c(133,2015), # plating
+  c(133,2015), # planting
   c(300,2015), # harvest
-  c(133,2016), # plating
+  c(133,2016), # planting
   c(280,2016), # harvest
-  c(138,2017), # plating
+  c(138,2017), # planting
   c(313,2017), # harvest
-  c(140,2018), # plating
+  c(140,2018), # planting
   c(303,2018), # harvest
-  c(150,2019), # plating
+  c(150,2019), # planting
   c(273,2019), # harvest
   c(213,2020), # harvest
-  c(134,2021), # plating
+  c(134,2021), # planting
   c(307,2021), # harvest
-  c(138,2022), # plating
+  c(138,2022), # planting
   c(276,2022), # harvest
   c(221,2023) # harvest
 )))
 colnames(mgmt_dates_p3) <- c("doy", "year")
 
-# mgmt_dates_p1 <- as.data.frame( do.call( rbind, list(
-#   c(1,2018),
-#   c(140,2018), # plating
-#   c(303,2018), # harvest
-#   c(365,2018), # end of year
-#   c(1,2019),
-#   c(150,2019), # plating
-#   c(273,2019), # harvest
-#   c(365,2019), # end of year
-#   c(1,2020),
-#   c(143,2020), # plating
-#   c(267,2020), # harvest
-#   c(365,2020), # end of year
-#   c(1,2021),
-#   c(134,2021), # plating
-#   c(307,2021), # harvest
-#   c(365,2021), # end of year
-#   c(1,2022),
-#   c(138,2022), # plating
-#   c(276,2022), # harvest
-#   c(365,2022), # end of year
-#   c(1,2023),
-#   c(136,2023), # plating
-#   c(277,2023), # harvest
-#   c(365,2023) # end of year
-# )))
-# colnames(mgmt_dates_p1) <- c("doy", "year")
-
+# loading fertilizer application dates current P1 and P3 to include in graphs
 
 fert_dates_p1 <- as.data.frame( do.call( rbind, list(
   c(293,2012),
@@ -513,14 +475,14 @@ climate <- do.call(rbind, df_list)
 
 # plot some climate variables
 
-climate %>% 
-  group_by(year) %>% 
-  summarise(
-    prec = sum(prec)
-  ) %>% 
-  ggplot(aes(x = year, y = prec))+
-  geom_col()+
-  theme_bw()
+# climate %>% 
+#   group_by(year) %>% 
+#   summarise(
+#     prec = sum(prec)
+#   ) %>% 
+#   ggplot(aes(x = year, y = prec))+
+#   geom_col()+
+#   theme_bw()
 
 #################################
 
@@ -581,26 +543,6 @@ combined_data %>%
             vjust = 1)+
   theme_bw()
 
-# grain C
-
-combined_data %>% 
-  pivot_longer(
-    cols = c(grain_c_kg_ha_obs, grain_c_kg_ha_mod), 
-    names_to = "c_type", 
-    values_to = "c_value"
-  ) %>%
-  mutate(c_category = ifelse(grepl("obs", c_type), "obs", "mod")) %>%
-  select(-c_type) %>% 
-  ggplot(aes(x = c_category, y = c_value, fill = c_category)) +
-  geom_bar(stat = "identity", position = "dodge", colour = "black") +
-  facet_grid(cols = vars(year), rows = vars(crop_type)) +
-  scale_fill_manual(values = c("obs" = "#009E73", "mod" = "#999999")) +
-  theme_bw() +
-  labs(x = "Data Type", y = "crop yield (kg/ha)")+
-  geom_text(aes(label = round(c_value, 0)), 
-            position = position_dodge(width = 0.9), 
-            vjust = 1)
-
 ## statistics
 
 # yield 
@@ -609,7 +551,7 @@ modeled <- filter(mod_yield_p1, crop_type == "corn")$crop_yield_mod_kg_ha
 observed <- filter(obs_yield_p1, crop_type == "corn")$crop_yield_obs_kg_ha
 metrics_yield <- calculate_metrics(observed, modeled)
 
-metrics_yield_df <- data.frame(
+metrics_yield_df <- data.frame( # data frame to store results from multiple runs 
   PBIAS = numeric(0),
   NSE = numeric(0),
   RMSE = numeric(0),
@@ -618,14 +560,8 @@ metrics_yield_df <- data.frame(
   R2 = numeric(0)
 )
 
-#metrics_yield_df <- rbind(metrics_yield_df, metrics_yield)
+metrics_yield_df <- rbind(metrics_yield_df, metrics_yield)
 metrics_yield_df
-
-# grain c
-
-modeled <- mod_yield_p1$grain_c_kg_ha
-observed <- obs_yield_p1$grain_c_kg_ha
-calculate_metrics(observed, modeled)
 
 ###### SOIL TEMPERATURE ###########
 
@@ -753,8 +689,6 @@ mod_soil_water_p1$date <- as.Date(paste(mod_soil_water_p1$year, mod_soil_water_p
 # graphs
 combined_data <- merge(obs_soil_wfps_p1, mod_soil_water_p1, by = "date")
 combined_data$year <- combined_data$year.x
-# combined_data2 <- merge(obs_soil_vwc_p1, mod_soil_water_p1, by = "date")
-# head(mod_soil_water_p1)
 
 # wfps_5
 
@@ -1591,7 +1525,7 @@ mod_yield_p3 <- mod_yield_p3[order(mod_yield_p3$year), ]
 mod_yield_p3$crop_yield_mod_kg_ha <- ifelse(mod_yield_p3$crop_type == "corn", mod_yield_p3$grain_c /0.42, ifelse(mod_yield_p3$crop_type == "soybean", mod_yield_p3$grain_c /0.41, ifelse(mod_yield_p3$crop_type == "winter wheat", mod_yield_p3$grain_c /0.40, ifelse(mod_yield_p3$crop_type %in% c("cover crop", "rye", "clover"), c(mod_yield_p3$grain_c + mod_yield_p3$leaf_c + mod_yield_p3$stem_c)/0.41,mod_yield_p3$grain_c /0.41))))
 
 
-# incorporating actual cover crop biomass from dates in which it was sampled in th field
+# incorporating actual cover crop biomass from dates in which it was sampled in the field
 
 # importing cover crop data for specific dates
 
@@ -1645,18 +1579,7 @@ mod_yield_p3 <- mod_yield_p3 %>%
 mod_yield_p3 <- mod_yield_p3 %>%
   mutate(across(everything(), ~ ifelse(. == "rye", "cover crop", .)))
 
-## statistics
-
-# yield 
-
-combined_data <- merge(obs_yield_p3, mod_yield_p3, by = c("year", "crop_type", "crop_order"))
-
-#modeled <- combined_data$crop_yield_mod_kg_ha
-#observed <- combined_data$crop_yield_obs_kg_ha
-#calculate_metrics(observed, modeled)
-
 # graph
-
 
 combined_data %>% 
   pivot_longer(
@@ -1679,6 +1602,15 @@ combined_data %>%
             vjust = 0.5)+
   theme_bw()
 
+## statistics
+
+# yield 
+
+combined_data <- merge(obs_yield_p3, mod_yield_p3, by = c("year", "crop_type", "crop_order"))
+
+modeled <- combined_data$crop_yield_mod_kg_ha
+observed <- combined_data$crop_yield_obs_kg_ha
+calculate_metrics(observed, modeled)
 
 ###### SOIL TEMPERATURE ###########
 
@@ -1717,8 +1649,6 @@ mod_soil_water_p3$date <- as.Date(paste(mod_soil_water_p3$year, mod_soil_water_p
 # graphs
 combined_data_swc_p3 <- merge(obs_soil_wfps_p3, mod_soil_water_p3, by = "date")
 combined_data_swc_p3$year <- combined_data_swc_p3$year.x
-# combined_data2 <- merge(obs_soil_vwc_p3, mod_soil_water_p3, by = "date")
-# head(mod_soil_water_p3)
 
 # wfps_5
 
@@ -2145,6 +2075,11 @@ observed <- merged_data$N2O_.g_N.ha.d.
 metrics <- calculate_metrics(observed, predicted)
 
 #########################
+
+
+############################################################
+################# OLDER CODE ###############################
+############################################################
 
 ############################################################
 #### final code for scenarios  - ALL ROTATION ######
