@@ -10,7 +10,7 @@
 
 # set wd
 getwd()
-setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/1_modeling/r_analysis")
+setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/1_modeling/1_e26_r_analysis")
 
 # install packages
 # install.packages("tidyverse")
@@ -354,7 +354,7 @@ obs_soil_n_p1 %>%
 
 # import observed data n2o
 
-obs_n2o_p1 <- read_excel("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/3_undergrad_christine/Christine Cudmore/1_winter_2025/Elora_Daily N2O&Management_241204.xlsx", sheet = "current_plot1_n2o")
+obs_n2o_p1 <- read_excel("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/1_modeling/1_e26_r_analysis/obs_data/1_e26_long_term_data.xlsx", sheet = "n2o_obs_non_gap_filled")
 
 # obs_n2o$date <- as.Date(obs_n2o$date, format = "%m/%d/%Y")
 # obs_n2o$date_jul <- yday(obs_n2o$date)
@@ -725,7 +725,7 @@ combined_data %>%
   ) %>%
   mutate(yield_category = ifelse(grepl("obs", yield_type), "obs", "mod")) %>%
   select(-yield_type) %>%
-  filter(crop_type == "winter wheat") %>% 
+  #filter(crop_type == "winter wheat") %>% 
   #filter(!crop == 3) %>% 
   ggplot(aes(x = yield_category, y = yield_value, fill = yield_category)) +
   geom_bar(stat = "identity", position = "dodge", colour = "black") +
@@ -744,14 +744,14 @@ combined_data %>%
 
 # yield 
 
-# metrics_yield_df <- data.frame(
-#   PBIAS = numeric(0),
-#   NSE = numeric(0),
-#   RMSE = numeric(0),
-#   RRMSE_percent = numeric(0),
-#   Index_of_Agreement_d = numeric(0),
-#   R2 = numeric(0)
-# )
+metrics_yield_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
 
 combined_data <- merge(mod_yield_p1, obs_yield_p1, by = c("year", "crop_type"))
 
@@ -890,14 +890,14 @@ metrics_gpp <- calculate_metrics(observed, predicted)
 # observed <- filter(merged_filter, year_mod %in% c(2019,2020))$obs_gpp
 # metrics_gpp <- calculate_metrics(observed, predicted)
 
-# metrics_gpp_df <- data.frame(
-#   PBIAS = numeric(0),
-#   NSE = numeric(0),
-#   RMSE = numeric(0),
-#   RRMSE_percent = numeric(0),
-#   Index_of_Agreement_d = numeric(0),
-#   R2 = numeric(0)
-# )
+metrics_gpp_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
 
 metrics_gpp_df <- rbind(metrics_gpp_df, metrics_gpp)
 metrics_gpp_df
@@ -1428,9 +1428,24 @@ observed <- combined_data$wfps_5
 modeled <- combined_data$X5cm*100
 calculate_metrics(observed, modeled)
 
-observed <- filter(combined_data, Day > 90 & Day < 335)$wfps_5
-modeled <- filter(combined_data, Day > 90 & Day < 335)$X5cm*100
-calculate_metrics(observed, modeled)
+
+
+metrics_wfps5_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
+
+observed_wfps5 <- filter(combined_data, Day > 90 & Day < 335)$wfps_5
+modeled_wfps5  <- filter(combined_data, Day > 90 & Day < 335)$X5cm*100
+metrics_wfps5 <-calculate_metrics(predicted_wfps5 , observed_wfps5 )
+
+metrics_wfps5 _df <- rbind(metrics_wfps5 _df, metrics_wfps5 )
+metrics_wfps5 _df
+
 
 # wfps 25 cm
 observed <- combined_data$wfps_25
@@ -1732,9 +1747,6 @@ mod_n2o_p1 <- mod_n2o_p1 %>%
 # graphs 
 obs_n2o_p1$n2o_n_g_ha_day <- as.numeric(obs_n2o_p1$n2o_n_g_ha_day)
 
-str(obs_n2o_p1)
-
-
 ggplot(data = filter(mod_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_flux_g_n_ha_d)) +
   geom_line(size = 1, color = "darkgray") +
   geom_line(data = filter(obs_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_n_g_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
@@ -1744,10 +1756,10 @@ ggplot(data = filter(mod_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_f
     axis.text.x = element_text(angle = 90))+
   ylab("N2O emissions (g N/ha/day)")+
   geom_vline(data = filter(fert_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
-  geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y = X5cm * 100*16), size = 1, color = "gray") +
-  geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y =wfps_5*16), size = 1, color = "#D55E00", alpha=0.5)+
+  # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y = X5cm * 100*16), size = 1, color = "gray") +
+  # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y =wfps_5*16), size = 1, color = "#D55E00", alpha=0.5)+
   # geom_line(data = filter(mod_conv_soil_n, year %in% c(2018:2023)), aes(x = doy, y = no3_0_15*20), color = "black")+
-  geom_point(data = filter(mgmt_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy, y = 1200), color = "blue", size = 4, shape = 4)+
+  geom_point(data = filter(mgmt_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy, y = 500), color = "blue", size = 4, shape = 4)+
   scale_y_continuous(
     sec.axis = sec_axis(
       trans = ~ ./16,  # No scaling needed, precipitation is already in cm
@@ -1757,10 +1769,27 @@ ggplot(data = filter(mod_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_f
   )
 
 # statistics 
-merged_data <- merge(mod_n2o_p1, obs_n2o_p1, by = "date", all = TRUE, suffixes = c("_mod", "_obs"))
+merged_data <- merge(mod_n2o_p1, obs_n2o_p1, by = c("year", "doy"), all = TRUE, suffixes = c("_mod", "_obs"))
 
-predicted <- merged_data$n2o_flux_g_n_ha_d
-observed <- merged_data$N2O_.g_N.ha.d.
+
+metrics_n2o_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
+
+predicted_n2o <- merged_data$n2o_flux_g_n_ha_d
+observed_n2o <- merged_data$n2o_n_g_ha_day
+metrics_n2o <-calculate_metrics(predicted_n2o , observed_n2o )
+
+metrics_n2o_df <- rbind(metrics_n2o_df, metrics_n2o )
+metrics_n2o_df
+
+
+
 metrics <- calculate_metrics(observed, predicted)
 
 mod_n2o_p1

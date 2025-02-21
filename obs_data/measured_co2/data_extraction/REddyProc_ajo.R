@@ -16,6 +16,7 @@ help('REddyProc-package')
 library(REddyProc)
 library(dplyr)
 library(writexl)
+library(ggplot2)
 
 # key sources of information:
 
@@ -35,14 +36,19 @@ library(writexl)
 
 # The workflow starts with importing the half-hourly data. 
 
-EddyData_2018 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\P12_tower_2018_R.txt")
-EddyData_2019 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\\\P12_tower_2019_R.txt")
-EddyData_2020 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\\\P12_tower_2020_R.txt")
-EddyData_2021 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\\\P12_tower_2021_R.txt")
-EddyData_2022 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\\\P12_tower_2022_R.txt")
-EddyData_2023 <- fLoadTXTIntoDataframe("data\\measured_co2\\data_extraction\\p12_all_2018_2022\\\\P12_tower_2023_R.txt")
+EddyData_2018 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2018_R.txt")
+EddyData_2019 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2019_R.txt")
+EddyData_2020 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2020_R.txt")
+EddyData_2021 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2021_R.txt")
+EddyData_2022 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2022_R.txt")
+EddyData_2023 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2023_R.txt")
 
-EddyData <- rbind(EddyData_2018, EddyData_2019, EddyData_2020, EddyData_2021, EddyData_2022) # merging all years in a single dataset
+EddyData <- rbind(EddyData_2018, EddyData_2019, EddyData_2020, EddyData_2021, EddyData_2022, EddyData_2023) # merging all years in a single dataset
+
+nrow(EddyData)
+EddyData <- EddyData %>%
+  mutate(NEE = ifelse(abs(NEE) > 60, NA, NEE)) # filtering out outliers that have an absolute value larger than 60, based on what was discussed with Patrich
+nrow(EddyData)
 
 # Replace long runs of equal NEE values by NA
 EddyData <- filterLongRuns(EddyData, "NEE")
@@ -60,7 +66,7 @@ EProc <- sEddyProc$new('P1', EddyDataWithPosix, c('NEE','LE','H','Ustar','Tair',
 EProc$sPlotFingerprintY('NEE', Year = 2019, valueLimits = c(-200,200))
 EProc$sPlotFingerprintY('LE', Year = 2019, valueLimits = c(-100,900))
 EProc$sPlotFingerprintY('H', Year = 2019, valueLimits = c(-200,200))
-EProc$sPlotHHFluxesY('NEE', Year = 2019)
+EProc$sPlotHHFluxesY('NEE', Year = 2020)
 
 #### data gap filling
 
@@ -108,7 +114,7 @@ EProc$sGetUstarScenarios()
 
 EProc$sMDSGapFillAfterUstar('NEE', FillAll = FALSE, isVerbose = FALSE)
 grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE ) # extract name of the variable that will be used
-EProc$sPlotFingerprintY('NEE_uStar_f', Year = 2022)
+EProc$sPlotFingerprintY('NEE_uStar_f', Year = 2021)
 
 # partitioning
 
@@ -135,7 +141,7 @@ colnames(seasonStarts2) <- c("doy", "year")
 
 # bring in dataset from other partitioning and gap-filling method.
 
-new_co2 <- read.csv("data/measured_co2/co2_jevans_folder.csv", header = FALSE)
+new_co2 <- read.csv("obs_data/measured_co2/co2_jevans_folder.csv", header = FALSE)
 colnames(new_co2) <- new_co2[2, ]
 new_co2 <- new_co2[-c(1:3),]
 new_co2$nee_obs <- as.numeric(new_co2$NEE)
@@ -147,7 +153,6 @@ new_co2 <- new_co2 %>%
   mutate(doy = as.numeric(doy))
 
 # creating a dataset with the reddyproc data 
-
 filled <- CombinedData %>% 
   group_by(doy, Year) %>% 
   summarise(
@@ -159,19 +164,20 @@ filled <- CombinedData %>%
 
 # combine datasets to be compared
 
-combined <- new_co2 %>% 
-  filter(plot == 1) %>% 
-  left_join(filled, by = c("year", "doy")) # The key feature of left_join() is that it keeps all the rows from the left data frame and only the matching rows from the right data frame. If no match is found in the right data frame, NA values are inserted in the corresponding columns.
+combined <- filled %>% 
+  #filter(plot == 1) %>% 
+  left_join(filter(new_co2, plot == 1), by = c("year", "doy")) # The key feature of left_join() is that it keeps all the rows from the left data frame and only the matching rows from the right data frame. If no match is found in the right data frame, NA values are inserted in the corresponding columns.
 
 # comparison graphs for nee
 
 combined %>%
+  #filter(year == 2020) %>% 
   ggplot(aes(x = doy, y = nee))+
   geom_line(size = 1, color = "black", alpha = 0.75)+
   geom_line(aes(x = doy, y = nee_obs), color = "#0072B2", linetype = 1, size = 1, alpha = 0.5)+
   facet_wrap(year~., nrow = 4)+
   theme_bw()+
-  geom_vline(data = filter(seasonStarts2, year %in% c(2018:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
+  geom_vline(data = filter(seasonStarts2, year %in% c(2018:2023)), aes(xintercept = doy), color = "red", linetype = "dashed") 
 
 # comparison graphs for respiration
 
