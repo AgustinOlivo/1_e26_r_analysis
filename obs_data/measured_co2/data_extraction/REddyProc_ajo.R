@@ -10,6 +10,8 @@
 
 install.packages("REddyProc")
 help('REddyProc-package')
+install.packages("psych")
+install.packages("openair")
 
 # load libraries
 
@@ -17,6 +19,13 @@ library(REddyProc)
 library(dplyr)
 library(writexl)
 library(ggplot2)
+library(psych)
+library(openair)
+
+# setting working directory
+
+getwd()
+setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/1_modeling/1_e26_r_analysis")
 
 # key sources of information:
 
@@ -24,11 +33,14 @@ library(ggplot2)
 # source 2: https://github.com/EarthyScience/REddyProc/blob/master/vignettes/useCase.md
 # source 3 (initial REddyProc paper): https://bg.copernicus.org/articles/15/5015/2018/bg-15-5015-2018.html
 # source 4 (definition of different friction velocities across the year - u*): https://cran.r-project.org/web/packages/REddyProc/vignettes/DEGebExample.html
+# source 5: https://rstudio-pubs-static.s3.amazonaws.com/84133_4c4347b1ba5e4067980787a85e27d68f.html
 
 ###################################################################
 
 ########################################################################
 ###### option 1: data gapfilling  using user defined uStar-Seasons #####
+
+# there are a few different options on how to conduct this analysis; the one below considers generating different ustar seasons, and also estimating the probability associated with those; in another files that Shannon had compiled, a slightly different approach is used where the seasons are generated, but the probability associated wit the ustar tresholds are not estimated.
 
 # key source of information: https://cran.r-project.org/web/packages/REddyProc/vignettes/DEGebExample.html
 
@@ -36,19 +48,34 @@ library(ggplot2)
 
 # The workflow starts with importing the half-hourly data. 
 
-EddyData_2018 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2018_R.txt")
-EddyData_2019 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2019_R.txt")
-EddyData_2020 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2020_R.txt")
-EddyData_2021 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2021_R.txt")
-EddyData_2022 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2022_R.txt")
-EddyData_2023 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat\\P12_tower_2023_R.txt")
+EddyData_2018 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2018_R.txt")
+EddyData_2019 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2019_R.txt")
+EddyData_2020 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2020_R.txt")
+EddyData_2021 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2021_R.txt")
+EddyData_2022 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2022_R.txt")
+EddyData_2023 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2023_R.txt")
 
 EddyData <- rbind(EddyData_2018, EddyData_2019, EddyData_2020, EddyData_2021, EddyData_2022, EddyData_2023) # merging all years in a single dataset
+# co2 fluxes are in umolm-2s-1
 
-nrow(EddyData)
+# filtering out values outside of the range (mostly based on source 5)
+
+EddyData <- mutate(EddyData, 
+          NEE = ifelse(abs(NEE) > 60, NA, NEE), # this was not in the original code from source 5, but added it based on my discussion with Patrick. 
+          #PAR = pmin(PAR, 2500),
+          #PAR = pmax(PAR, 0),
+          VPD = ifelse(VPD > 50, NA, VPD), # this was in the original code
+          VPD = ifelse(VPD < 0, NA, VPD), # this was not in the original code from source 5, but REddyProc gave me a warning so I added it.
+          Rg = pmin(Rg, 1200),
+          Rg = pmax(Rg, 0),
+          RH = ifelse(abs(RH) > 100, NA, RH), # I added this after realizing there were a few observations with values among 3000s and 6000s 
+          )
+
+# for some reason the original file had a doy == 367 for 2020, the seems to correspond to the first measurement of 2021
+
 EddyData <- EddyData %>%
-  mutate(NEE = ifelse(abs(NEE) > 60, NA, NEE)) # filtering out outliers that have an absolute value larger than 60, based on what was discussed with Patrich
-nrow(EddyData)
+  mutate(Year = ifelse(Year == 2020 & DoY == 367, 2021, Year),
+         DoY = ifelse(Year == 2021 & DoY == 367, 1, DoY))
 
 # Replace long runs of equal NEE values by NA
 EddyData <- filterLongRuns(EddyData, "NEE")
@@ -59,14 +86,54 @@ EddyDataWithPosix <- fConvertTimeToPosix(
   filterLongRuns("NEE")
 
 # initialize R5 reference class sEddyProc for post-processing of eddy data
-EProc <- sEddyProc$new('P1', EddyDataWithPosix, c('NEE','LE','H','Ustar','Tair','RH','VPD', 'Rg'))
+EProc <- sEddyProc$new('P1', EddyDataWithPosix, c('NEE','LE','H','Ustar','Tair','RH','VPD', 'Rg')) # this command creates an object of class "sEddyProc" with the data from EddyDataWithPosix, and verifies if there are any values outside of pre-defined ranges (via warning message; for NEE it uses values that are less than -50, and for VPD negative values)
+
+# check structure of the data
+
+# estrutura da classe de dados 
+str(EProc$sDATA)
+
+# statistical summary of the data
+
+round(describe(EProc$sDATA[,-1]), 2)
+
+# based on source 5 (listed above)
 
 # fingerprint plot: a fingerprint-plot is a color-coded image of the half-hourly fluxes by daytime on the x and and day of the year on the y axis.This may show several gaps
+
+#plots for specific years
 
 EProc$sPlotFingerprintY('NEE', Year = 2019, valueLimits = c(-200,200))
 EProc$sPlotFingerprintY('LE', Year = 2019, valueLimits = c(-100,900))
 EProc$sPlotFingerprintY('H', Year = 2019, valueLimits = c(-200,200))
 EProc$sPlotHHFluxesY('NEE', Year = 2020)
+
+# plots across multiple years (from source 5)
+
+EddyDataWithPosix_oa <- EddyDataWithPosix
+EddyDataWithPosix_oa <- select(EddyDataWithPosix_oa, -(Year:Hour))
+EddyDataWithPosix_oa <- rename(EddyDataWithPosix_oa, date = DateTime)
+timePlot(EddyDataWithPosix_oa, 
+         names(EddyDataWithPosix_oa)[-1], 
+         ylab = "variables", 
+         date.format = "%b\n%Y",
+         date.breaks = 16, 
+         date.pad = TRUE,
+         plot.type = "h",
+         scales = "free",
+         key = FALSE)
+
+# plor for nee only
+EddyDataWithPosix_oa <- EddyDataWithPosix_oa %>%
+  mutate(Year = format(date, "%Y"),  # Extract year
+         DoY = as.integer(format(date, "%j")))  # Extract day of the year
+
+EddyDataWithPosix_oa %>%
+  select(date, NEE, Year, DoY) %>%
+  ggplot(aes(x = DoY, y = NEE))+
+  geom_line(colour = "red")+
+  facet_wrap(Year~., nrow = 4)+
+  theme_bw()
 
 #### data gap filling
 
@@ -74,63 +141,135 @@ EProc$sPlotHHFluxesY('NEE', Year = 2020)
 
 seasonStarts <- as.data.frame( do.call( rbind, list(
   c(1,2018),
-  c(138,2018), # emergence
+  c(138,2018), # planting
   c(303,2018), # harvest
-  c(365,2018), # end of year
+  c(365,2018), 
   c(1,2019),
-  c(150,2019), # emergence
+  c(150,2019), # planting
   c(273,2019), # harvest
-  c(365,2019), # end of year
+  c(365,2019), 
   c(1,2020),
-  c(143,2020), # emergence
+  c(143,2020), # planting
   c(267,2020), # harvest
-  c(365,2020), # end of year
+  c(365,2020), 
   c(1,2021),
-  c(134,2021), # emergence
+  c(134,2021), # planting
   c(307,2021), # harvest
-  c(365,2021), # end of year
+  c(365,2021), 
   c(1,2022),
-  c(138,2022), # emergence
+  c(138,2022), # planting
   c(276,2022), # harvest
-  c(365,2022), # end of year
+  c(365,2022), 
   c(1,2023),
-  c(136,2023), # emergence
+  c(136,2023), # planting
   c(277,2023), # harvest
-  c(365,2023) # end of year
+  c(365,2023) 
 )))
-seasonFactor <- usCreateSeasonFactorYdayYear(
-  EddyDataWithPosix$DateTime - 15*60, starts = seasonStarts) 
 
+seasonFactor <- usCreateSeasonFactorYdayYear(
+  EddyDataWithPosix$DateTime - 15*60, starts = seasonStarts) # in Daphnee's code there is no "-15*60; not sure what this is exactly
 seasonStartsDate <- fConvertTimeToPosix( data.frame(Year = seasonStarts[,2]
                                                     , DoY = seasonStarts[,1], Hour = 0.50), 'YDH'
                                          , Year = "Year", Day = "DoY", Hour = "Hour")
+# plotting NEE values
+plot(NEE ~ DateTime, EddyDataWithPosix)
+# plotting the lines for each season
+abline(v = seasonStartsDate$DateTime)
+# summary of different seasons
+summary(seasonStartsDate)
 
-(uStarTh <- EProc$sEstUstarThold(seasonFactor = seasonFactor))
+#### data gap filling
 
+# estimating the ustar_threshold distribution
+
+# the estimation of the distribution of uStar thresholds follows, to identify periods of low friction velocity (uStar), where NEE is biased low. Discarding periods with low uStar is one of the largest sources of uncertainty in aggregated fluxes. Hence, several quantiles of the distribution of the uncertain uStar threshold are estimated by a bootstrap.
+
+# estimation the distribution
+
+EProc$sEstimateUstarScenarios(seasonFactor = seasonFactor, nSample = 100L, probs = c(0.50)) # i kept these scenarios only for 0.5 to make it run quicker, but i should use: c(0.05, 0.50, 0.95)
+EProc$sGetEstimatedUstarThresholdDistribution()
+
+#The output reports annually aggregated uStar estimates for the original data and lower, median, and upper quantile of the estimated distribution. The threshold can vary between periods of different surface roughness, or pre-defined seasons. Therefore, there are estimates for different time periods, called seasons (those were defined in previous step)
+
+# The subsequent post processing steps will be repeated using the four $u_$ threshold scenarios (non-resampled and tree quantiles of the bootstrapped distribution). They require to specify a $u_$-threshold for each season and a suffix to distinguish the outputs related to different thresholds. By default the annually aggregated estimates are used for each season within the year.
+
+# calling sEddyProc_useSeaonsalUStarThresholds so the code uses different U start tresholds for different seasons.
+# (uStarScens <- usGetSeasonalSeasonUStarMap( EProc$sGetEstimatedUstarThresholdDistribution()))
+# EProc$sSetUstarScenarios(uStarScens)
 EProc$useSeaonsalUStarThresholds()
 EProc$sGetUstarScenarios()
 
-#Gap-filling
+# actual gap-filling
+EProc$sMDSGapFillUStarScens('NEE', FillAll = TRUE)
+grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE) # extract name of the variable that will be used
+EProc$sPlotFingerprintY('NEE_uStar_f', Year = 2021) # plotting the gap-filled data for a specific year
 
-EProc$sMDSGapFillAfterUstar('NEE', FillAll = FALSE, isVerbose = FALSE)
-grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE ) # extract name of the variable that will be used
-EProc$sPlotFingerprintY('NEE_uStar_f', Year = 2021)
+# plot to look at the raw data + gap-filled data
+FilledEddyData <- EProc$sExportResults()
+CombinedData <- cbind(EddyData, FilledEddyData) # combining this files helps bring back the doy 
+CombinedData$doy <- CombinedData$DoY
 
-# partitioning
+# checking the quality of the data after filtering and gap-filling
+
+# Ustar = original Ustar 
+# Ustar_uStar_Thres = ustar treshold defined for each season
+# NEE_uStar_orig = NEE value after ustar filtering
+# NEE_uStar_f = NEE value after filtering and gap-filling
+
+# checking values that have Ustar lower than thresholds, but are not excluded for some reason
+CombinedData %>%
+  filter(Ustar < Ustar_uStar_Thres) %>%
+  filter(NEE == NEE_uStar_orig) %>%
+  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY) %>%
+  group_by(Year) %>% 
+  summarise(
+    n = n()
+  )
+
+# # checking values that have Ustar lower than thresholds, but are excluded
+CombinedData %>%
+  filter(Ustar < Ustar_uStar_Thres) %>%
+  filter(NEE != NEE_uStar_f) %>%
+  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY) %>% 
+  group_by(Year) %>% 
+  summarise(
+    n = n()
+  )
+
+# estimating total dapoints for each year
+CombinedData %>%
+  group_by(Year) %>% 
+  summarise(
+    n = n()
+  )
+
+# partitioning the NEE data into gpp and respiration
 
 EProc$sSetLocationInfo(LatDeg = 43.64079, LongDeg = -80.41301, TimeZoneHour = -5)  
-EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
-EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
+EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA) # Gap-filled Tair (and NEE) needed for partitioning     
+EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA) # Gap-filled Tair (and NEE) needed for partitioning     
 EProc$sFillVPDFromDew() # fill longer gaps still present in VPD_f
 
 # night-time method
 
-EProc$sMRFluxPartitionUStarScens() 
+EProc$sMRFluxPartitionUStarScens() # night time partitioning -> Reco, GPP
+EProc$sApplyUStarScen(EProc$sMRFluxPartition )
 grep("GPP.*_f$|Reco",names(EProc$sExportResults()), value = TRUE) # extract the name of the variables that will be used
 
-FilledEddyData <- EProc$sExportResults()
-CombinedData <- cbind(EddyData, FilledEddyData)
-CombinedData$doy <- CombinedData$DoY
+# plot to look at the raw data + gap-filled data
+CombinedData %>%
+  ggplot(aes(x = doy, y = NEE_uStar_f))+
+  geom_line(colour = "black")+
+  geom_line(aes(x= doy, y = NEE), colour = "red")+
+  facet_wrap(Year~., nrow = 4)+
+  theme_bw()
+
+
+
+
+
+
+
 
 ## plotting the results and comparing other partitioning and gap-filling methods
 
