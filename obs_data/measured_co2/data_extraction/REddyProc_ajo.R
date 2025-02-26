@@ -184,6 +184,11 @@ summary(seasonStartsDate)
 
 # the estimation of the distribution of uStar thresholds follows, to identify periods of low friction velocity (uStar), where NEE is biased low. Discarding periods with low uStar is one of the largest sources of uncertainty in aggregated fluxes. Hence, several quantiles of the distribution of the uncertain uStar threshold are estimated by a bootstrap.
 
+# option 1
+(uStarTh <- EProc$sEstUstarThold(seasonFactor = seasonFactor))
+
+# option 2
+
 # estimation the distribution
 
 EProc$sEstimateUstarScenarios(seasonFactor = seasonFactor, nSample = 100L, probs = c(0.50)) # i kept these scenarios only for 0.5 to make it run quicker, but i should use: c(0.05, 0.50, 0.95)
@@ -200,6 +205,13 @@ EProc$useSeaonsalUStarThresholds()
 EProc$sGetUstarScenarios()
 
 # actual gap-filling
+
+# with option 1
+
+EProc$sMDSGapFillAfterUstar('NEE', FillAll = FALSE, isVerbose = FALSE)
+
+# with option 2
+
 EProc$sMDSGapFillUStarScens('NEE', FillAll = TRUE)
 grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE) # extract name of the variable that will be used
 EProc$sPlotFingerprintY('NEE_uStar_f', Year = 2021) # plotting the gap-filled data for a specific year
@@ -226,7 +238,7 @@ CombinedData %>%
     n = n()
   )
 
-# # checking values that have Ustar lower than thresholds, but are excluded
+# checking values that have Ustar lower than thresholds, but are excluded
 CombinedData %>%
   filter(Ustar < Ustar_uStar_Thres) %>%
   filter(NEE != NEE_uStar_f) %>%
