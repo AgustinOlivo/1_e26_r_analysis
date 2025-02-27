@@ -230,7 +230,8 @@ CombinedData$doy <- CombinedData$DoY
 # NEE_uStar_orig = NEE value after ustar filtering
 # NEE_uStar_f = NEE value after filtering and gap-filling
 
-# checking values that have Ustar lower than thresholds, but are not excluded for some reason
+# checking values that have Ustar lower than thresholds, but are not excluded for some reason; after looking at these graphs and discussing with Patrick, seems like most of the points that have low U* but are not excluded seem to be in line with the rest of the values. So the program just keeps them. There were just a few values that looked far off and might need to be manually deleted. 
+
 CombinedData %>%
   filter(Ustar < Ustar_U50_Thres) %>%
   #filter(NEE == NEE_U50_orig) %>%
