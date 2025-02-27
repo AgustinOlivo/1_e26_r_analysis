@@ -34,6 +34,7 @@ setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_pro
 # source 3 (initial REddyProc paper): https://bg.copernicus.org/articles/15/5015/2018/bg-15-5015-2018.html
 # source 4 (definition of different friction velocities across the year - u*): https://cran.r-project.org/web/packages/REddyProc/vignettes/DEGebExample.html
 # source 5: https://rstudio-pubs-static.s3.amazonaws.com/84133_4c4347b1ba5e4067980787a85e27d68f.html
+# source 6 (video): https://www.youtube.com/watch?v=-b0vc4u8kls
 
 ###################################################################
 
@@ -184,10 +185,10 @@ summary(seasonStartsDate)
 
 # the estimation of the distribution of uStar thresholds follows, to identify periods of low friction velocity (uStar), where NEE is biased low. Discarding periods with low uStar is one of the largest sources of uncertainty in aggregated fluxes. Hence, several quantiles of the distribution of the uncertain uStar threshold are estimated by a bootstrap.
 
-# option 1
+# option 1.a
 (uStarTh <- EProc$sEstUstarThold(seasonFactor = seasonFactor))
 
-# option 2
+# option 1.b
 
 # estimation the distribution
 
@@ -206,11 +207,11 @@ EProc$sGetUstarScenarios()
 
 # actual gap-filling
 
-# with option 1
+# with option 1.a
 
 EProc$sMDSGapFillAfterUstar('NEE', FillAll = FALSE, isVerbose = FALSE)
 
-# with option 2
+# with option 1.b
 
 EProc$sMDSGapFillUStarScens('NEE', FillAll = TRUE)
 grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE) # extract name of the variable that will be used
@@ -223,20 +224,53 @@ CombinedData$doy <- CombinedData$DoY
 
 # checking the quality of the data after filtering and gap-filling
 
-# Ustar = original Ustar 
+# NEE = original NEE value
+# Ustar = original Ustar value
 # Ustar_uStar_Thres = ustar treshold defined for each season
 # NEE_uStar_orig = NEE value after ustar filtering
 # NEE_uStar_f = NEE value after filtering and gap-filling
 
 # checking values that have Ustar lower than thresholds, but are not excluded for some reason
 CombinedData %>%
-  filter(Ustar < Ustar_uStar_Thres) %>%
-  filter(NEE == NEE_uStar_orig) %>%
+  filter(Ustar < Ustar_U50_Thres) %>%
+  #filter(NEE == NEE_U50_orig) %>%
   select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY) %>%
   group_by(Year) %>% 
   summarise(
     n = n()
   )
+
+CombinedData %>%
+  filter(Ustar < Ustar_U50_Thres) %>%
+  filter(NEE == NEE_U50_orig) %>%
+  filter(Year == 2020) %>% 
+  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY, Ustar_U50_Thres, NEE_U50_orig, NEE_U50_f, season) %>%
+  ggplot(aes(x = DoY, y = NEE_U50_orig))+
+  geom_point(color = "red")+
+  geom_point(data = filter(CombinedData, Year == 2020 & Ustar > Ustar_U50_Thres), aes(x = DoY, y = NEE_U50_orig), color = "black")
+
+CombinedData %>%
+  filter(Ustar < Ustar_U50_Thres) %>%
+  filter(NEE == NEE_U50_orig) %>%
+  filter(Year == 2020) %>% 
+  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY, Ustar_U50_Thres, NEE_U50_orig, NEE_U50_f, season, Hour) %>%
+  ggplot(aes(x = DoY, y = NEE_U50_orig))+
+  geom_point(data = filter(CombinedData, Year == 2020 ), aes(x = DoY, y = NEE_U50_f), color = "gray")+
+  geom_point(color = "red")+
+  geom_point(data = filter(CombinedData, Year == 2020 & Ustar > Ustar_U50_Thres & NEE == NEE_U50_orig), aes(x = DoY, y = NEE_U50_orig), color = "black")+
+  theme_bw()
+
+CombinedData %>%
+  filter(Ustar < Ustar_U50_Thres) %>%
+  filter(NEE == NEE_U50_orig) %>%
+  filter(Year == 2020) %>% 
+  filter(DoY == 183) %>% 
+  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY, Ustar_U50_Thres, NEE_U50_orig, NEE_U50_f, season, Hour) %>%
+  ggplot(aes(x = Hour, y = NEE_U50_orig))+
+  geom_point(data = filter(CombinedData, Year == 2020 & DoY == 183), aes(x = Hour, y = NEE_U50_f), color = "gray")+
+  geom_point(color = "red")+
+  geom_point(data = filter(CombinedData, Year == 2020 & DoY == 183 & Ustar > Ustar_U50_Thres), aes(x = Hour, y = NEE_U50_orig), color = "black")+
+  theme_bw()
 
 # checking values that have Ustar lower than thresholds, but are excluded
 CombinedData %>%
