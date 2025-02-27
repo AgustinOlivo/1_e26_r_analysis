@@ -290,6 +290,9 @@ CombinedData %>%
     n = n()
   )
 
+CombinedData %>%
+  select(CombinedData$)
+
 # partitioning the NEE data into gpp and respiration
 
 EProc$sSetLocationInfo(LatDeg = 43.64079, LongDeg = -80.41301, TimeZoneHour = -5)  
@@ -305,14 +308,35 @@ grep("GPP.*_f$|Reco",names(EProc$sExportResults()), value = TRUE) # extract the 
 
 # plot to look at the raw data + gap-filled data
 CombinedData %>%
-  ggplot(aes(x = doy, y = NEE_uStar_f))+
-  geom_line(colour = "black")+
-  geom_line(aes(x= doy, y = NEE), colour = "red")+
+  ggplot(aes(x = doy, y = NEE_U50_f))+
+  geom_point(colour = "black")+
+  #geom_line(aes(x= doy, y = NEE_U50_orig), colour = "red")+
+  #geom_point(aes(x= doy, y = GPP_U50_f), colour = "red")+
+  geom_point(aes(x= doy, y = Reco_U50), colour = "darkgreen")+
+  geom_point(aes(x= doy, y = NEE), colour = "blue")+
+  
   facet_wrap(Year~., nrow = 4)+
   theme_bw()
 
-
-
+CombinedData %>% 
+  filter(Year == 2023) %>% 
+  group_by(Year, doy) %>% 
+  group_by(Year, doy) %>% 
+  summarise(
+    NEE = mean(NEE, na.rm = TRUE),
+    Reco_U50 = mean(Reco_U50, na.rm = TRUE),
+    NEE_U50_f = mean(NEE_U50_f, na.rm = TRUE),
+    GPP_U50_f = mean(GPP_U50_f, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(x = doy, y = NEE_U50_f))+
+  geom_point(colour = "black")+
+  #geom_line(aes(x= doy, y = NEE_U50_orig), colour = "red")+
+  geom_point(aes(x= doy, y = GPP_U50_f), colour = "red")+
+  geom_point(aes(x= doy, y = Reco_U50), colour = "darkgreen")+
+  geom_point(aes(x= doy, y = NEE), colour = "blue")+
+  
+  facet_wrap(Year~., nrow = 4)+
+  theme_bw()
 
 
 

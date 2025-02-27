@@ -252,17 +252,24 @@ obs_co2$obs_gpp <- as.numeric(obs_co2$obs_gpp)
 obs_co2$obs_resp <- as.numeric(obs_co2$obs_resp)
 obs_co2$year <- as.numeric(obs_co2$year)
 
-obs_co2_p1 <- filter(obs_co2, plot == "1")
+obs_co2_p1 <- filter(obs_co2, plot_new == "1")
 
 # graph observed co2 data
-head(obs_co2_p1)
-obs_co2_p1 %>% 
-  ggplot(aes(x = doy, y = obs_nee)) +
-  geom_point(color = "black") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-  facet_wrap(year~., nrow = 4) +
-  ylab("NEE")
+# head(obs_co2_p1)
+# obs_co2_p1 %>% 
+#   ggplot(aes(x = doy, y = obs_nee)) +
+#   geom_point(color = "black") +
+#   theme_bw() +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+#   facet_wrap(year~., nrow = 4) +
+#   ylab("NEE")
+# 
+# obs_co2_p1 %>% 
+#   group_by(year) %>% 
+#   summarise(
+#     n = n()
+#   )
+
 
 # obs_co2_p1<- read_excel("data/measured_co2/P1_nondiverse_ObsCO2_2018-2021.xlsx", col_names = TRUE)
 # obs_co2_p1$obs_gpp <- obs_co2_p1$obs_gpp*(-1)
@@ -744,14 +751,14 @@ combined_data %>%
 
 # yield 
 
-metrics_yield_df <- data.frame(
-  PBIAS = numeric(0),
-  NSE = numeric(0),
-  RMSE = numeric(0),
-  RRMSE_percent = numeric(0),
-  Index_of_Agreement_d = numeric(0),
-  R2 = numeric(0)
-)
+# metrics_yield_df <- data.frame(
+#   PBIAS = numeric(0),
+#   NSE = numeric(0),
+#   RMSE = numeric(0),
+#   RRMSE_percent = numeric(0),
+#   Index_of_Agreement_d = numeric(0),
+#   R2 = numeric(0)
+# )
 
 combined_data <- merge(mod_yield_p1, obs_yield_p1, by = c("year", "crop_type"))
 
@@ -809,12 +816,6 @@ mod_co2_p1 <- mod_co2_p1 %>%
 mod_co2_p1$date <- as.Date(paste(mod_co2_p1$year, mod_co2_p1$date_jul), format = "%Y %j")
 mod_co2_p1$doy <- mod_co2_p1$Day
 
-mod_co2_p1 %>% 
-  filter(Year == 23) %>% 
-  summarise(
-    resp = sum(mod_resp)
-  )
-
 ### graphs 
 
 # gpp
@@ -843,7 +844,7 @@ mod_co2_p1 %>%
   #   date_breaks = "10 days",          # Breaks every 10 days
   #   date_labels = "%d/%m"          # Format as DD/MM
   # ) +
-  facet_wrap(year ~ ., nrow = 6, scales = "free_x") +
+  facet_wrap(year ~ ., nrow = 6) +
   theme_bw()+
   theme(
     axis.text.x = element_text(angle = 90))+
@@ -890,14 +891,14 @@ metrics_gpp <- calculate_metrics(observed, predicted)
 # observed <- filter(merged_filter, year_mod %in% c(2019,2020))$obs_gpp
 # metrics_gpp <- calculate_metrics(observed, predicted)
 
-metrics_gpp_df <- data.frame(
-  PBIAS = numeric(0),
-  NSE = numeric(0),
-  RMSE = numeric(0),
-  RRMSE_percent = numeric(0),
-  Index_of_Agreement_d = numeric(0),
-  R2 = numeric(0)
-)
+# metrics_gpp_df <- data.frame(
+#   PBIAS = numeric(0),
+#   NSE = numeric(0),
+#   RMSE = numeric(0),
+#   RRMSE_percent = numeric(0),
+#   Index_of_Agreement_d = numeric(0),
+#   R2 = numeric(0)
+# )
 
 metrics_gpp_df <- rbind(metrics_gpp_df, metrics_gpp)
 metrics_gpp_df
@@ -1125,7 +1126,7 @@ merge(mod_co2_p1, obs_co2_p1,  by = c("doy", "year")) %>%
   geom_text(aes(label = round(value, digits = 0)), position= position_dodge(width=0.9), vjust = 1 )
 
 # nee
-sum(obs_co2_p1$obs_nee),
+sum(obs_co2_p1$obs_nee)
 # nee by year
 
 merge(mod_co2_p1, obs_co2_p1, by = c("doy", "year")) %>% 
@@ -1159,8 +1160,6 @@ merge(mod_co2_p1, obs_co2_p1, by = c("doy", "year")) %>%
   ylab("annual nee (g C/m2)")+
   xlab("Year")+
   geom_text(aes(label = round(value, digits = 0)), position= position_dodge(width=0.9), vjust = 1 )
-
-
 
 
 
@@ -1522,8 +1521,8 @@ mod_conv_soil_n <- mod_conv_soil_n %>%
 mod_conv_soil_n$date <- as.Date(paste(mod_conv_soil_n$year, mod_conv_soil_n$date_jul), format = "%Y %j")
 mod_conv_soil_n$doy <- mod_conv_soil_n$date_jul
 
-# mod_conv_soil_n$nh4_0_15 <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
-# mod_conv_soil_n$no3_0_15 <- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
+mod_conv_soil_n$nh4_0_15 <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
+mod_conv_soil_n$no3_0_15 <- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
 
 mod_conv_soil_n$no3_0_15  <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
 mod_conv_soil_n$nh4_0_15<- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
@@ -1747,19 +1746,19 @@ mod_n2o_p1 <- mod_n2o_p1 %>%
 # graphs 
 obs_n2o_p1$n2o_n_g_ha_day <- as.numeric(obs_n2o_p1$n2o_n_g_ha_day)
 
-ggplot(data = filter(mod_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_flux_g_n_ha_d)) +
+ggplot(data = filter(mod_n2o_p1, year %in% c(2021)), aes(x = doy, y = n2o_flux_g_n_ha_d)) +
   geom_line(size = 1, color = "darkgray") +
-  geom_line(data = filter(obs_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_n_g_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
+  geom_line(data = filter(obs_n2o_p1, year %in% c(2021)), aes(x = doy, y = n2o_n_g_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
   facet_wrap(year ~ .) +
   theme_bw()+
   theme(
     axis.text.x = element_text(angle = 90))+
   ylab("N2O emissions (g N/ha/day)")+
-  geom_vline(data = filter(fert_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
+  geom_vline(data = filter(fert_dates_p1, year %in% c(2021)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
   # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y = X5cm * 100*16), size = 1, color = "gray") +
   # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y =wfps_5*16), size = 1, color = "#D55E00", alpha=0.5)+
   # geom_line(data = filter(mod_conv_soil_n, year %in% c(2018:2023)), aes(x = doy, y = no3_0_15*20), color = "black")+
-  geom_point(data = filter(mgmt_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy, y = 500), color = "blue", size = 4, shape = 4)+
+  geom_point(data = filter(mgmt_dates_p1, year %in% c(2021)), aes(xintercept = doy, y = 500), color = "blue", size = 4, shape = 4)+
   scale_y_continuous(
     sec.axis = sec_axis(
       trans = ~ ./16,  # No scaling needed, precipitation is already in cm
