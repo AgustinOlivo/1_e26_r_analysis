@@ -573,7 +573,7 @@ colnames(fert_dates_p3) <- c("doy", "year")
 
 # loading weather data.
 
-file_directory <- "data/climate/"
+file_directory <- "obs_data/climate/"
 file_list <- list.files(path = file_directory, pattern = "*.txt", full.names = TRUE)
 col_names <- c("doy", "temp_min", "temp_max", "prec", "wind", "radi", "hum")
 
@@ -614,7 +614,8 @@ climate %>%
   theme_bw()+
   theme(
     axis.text.x = element_text(angle = 90)
-  )
+  )+
+  geom_text(aes(label = round(prec, 0)), angle = 90)
 
 
 climate %>% 
@@ -815,6 +816,19 @@ mod_co2_p1 <- mod_co2_p1 %>%
 
 mod_co2_p1$date <- as.Date(paste(mod_co2_p1$year, mod_co2_p1$date_jul), format = "%Y %j")
 mod_co2_p1$doy <- mod_co2_p1$Day
+
+# averages SOC
+
+soc_data_averages_mod <- mod_co2_p1 %>% 
+  group_by(year) %>% 
+  summarise(
+    mean_soc_0_10 = mean(SOC0.10cm),
+    mean_soc_10_20 = mean(X.SOC10.20cm)
+    
+  )
+
+write_xlsx(soc_data_averages_mod, "soc_data_averages_mod.xlsx")
+
 
 ### graphs 
 
@@ -1746,19 +1760,19 @@ mod_n2o_p1 <- mod_n2o_p1 %>%
 # graphs 
 obs_n2o_p1$n2o_n_g_ha_day <- as.numeric(obs_n2o_p1$n2o_n_g_ha_day)
 
-ggplot(data = filter(mod_n2o_p1, year %in% c(2021)), aes(x = doy, y = n2o_flux_g_n_ha_d)) +
+ggplot(data = filter(mod_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_flux_g_n_ha_d)) +
   geom_line(size = 1, color = "darkgray") +
-  geom_line(data = filter(obs_n2o_p1, year %in% c(2021)), aes(x = doy, y = n2o_n_g_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
+  geom_line(data = filter(obs_n2o_p1, year %in% c(2015:2023)), aes(x = doy, y = n2o_n_g_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
   facet_wrap(year ~ .) +
   theme_bw()+
   theme(
     axis.text.x = element_text(angle = 90))+
   ylab("N2O emissions (g N/ha/day)")+
-  geom_vline(data = filter(fert_dates_p1, year %in% c(2021)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
+  geom_vline(data = filter(fert_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
   # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y = X5cm * 100*16), size = 1, color = "gray") +
   # geom_point(data = filter(combined_data_soil_water_p1, year > 2015, doy > 90 & doy < 335), aes(x = doy, y =wfps_5*16), size = 1, color = "#D55E00", alpha=0.5)+
   # geom_line(data = filter(mod_conv_soil_n, year %in% c(2018:2023)), aes(x = doy, y = no3_0_15*20), color = "black")+
-  geom_point(data = filter(mgmt_dates_p1, year %in% c(2021)), aes(xintercept = doy, y = 500), color = "blue", size = 4, shape = 4)+
+  geom_point(data = filter(mgmt_dates_p1, year %in% c(2015:2023)), aes(xintercept = doy, y = 500), color = "blue", size = 4, shape = 4)+
   scale_y_continuous(
     sec.axis = sec_axis(
       trans = ~ ./16,  # No scaling needed, precipitation is already in cm

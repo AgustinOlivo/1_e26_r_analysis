@@ -266,7 +266,7 @@ CombinedData %>%
   filter(NEE == NEE_U50_orig) %>%
   filter(Year == 2020) %>% 
   filter(DoY == 183) %>% 
-  select(Ustar, Ustar_uStar_Thres, NEE, NEE_uStar_orig, NEE_uStar_f, Year, DoY, Ustar_U50_Thres, NEE_U50_orig, NEE_U50_f, season, Hour) %>%
+  select(Ustar, Ustar_uStar_Thres, NEE,  , NEE_uStar_f, Year, DoY, Ustar_U50_Thres, NEE_U50_orig, NEE_U50_f, season, Hour) %>%
   ggplot(aes(x = Hour, y = NEE_U50_orig))+
   geom_point(data = filter(CombinedData, Year == 2020 & DoY == 183), aes(x = Hour, y = NEE_U50_f), color = "gray")+
   geom_point(color = "red")+
