@@ -618,11 +618,40 @@ climate %>%
   geom_text(aes(label = round(prec, 0)), angle = 90)
 
 
-climate %>% 
-  ggplot(aes(x = doy, y = prec))+
-  geom_point()+
-  theme_bw()+
-  facet_wrap(year~.)
+climate %>%
+  filter(doy %in% c(280:320)) %>%
+  group_by(doy) %>% 
+  summarise(
+    temp = mean((temp_max + temp_min) / 2, na.rm = TRUE),
+    year = year
+  ) %>% 
+  ggplot(aes(x = doy, y = temp))+
+  geom_vline(xintercept = 280, linetype = "dashed", color = "red", size = 1)+
+  geom_vline(xintercept = 320, linetype = "dashed", color = "red", size = 1)+
+  
+  geom_line()+
+  theme_bw()
+
+climate %>%
+filter(doy %in% c(280:320)) %>%
+ filter(year == 2016) %>%
+  group_by(doy) %>% 
+  summarise(
+    temp = mean((temp_max + temp_min) / 2, na.rm = TRUE),
+  ) %>% 
+summarise(
+  mean = mean(temp)
+)
+
+climate %>%
+  filter(doy %in% c(280:320)) %>%
+  group_by(doy) %>% 
+  summarise(
+    temp = mean((temp_max + temp_min) / 2, na.rm = TRUE),
+  ) %>% 
+  summarise(
+    mean = mean(temp)
+  )
 
 
 #################################
