@@ -19,6 +19,8 @@ library(writexl)
 library(ggplot2)
 library(psych)
 library(openair)
+library(tidyverse)
+
 
 # setting working directory
 getwd()
@@ -729,7 +731,8 @@ flux_grad_p1p2_2018_2024 <- bind_rows(flux_grad_p1_2018, flux_grad_p2_2018, flux
 flux_grad_p1p2_2018_2024$CO2_flux_umol <- (as.numeric(flux_grad_p1p2_2018_2024$`CO2 flux`) / 44.01) 
 
 flux_grad_p1p2_2018_2024 <- mutate(flux_grad_p1p2_2018_2024, 
-                  CO2_flux_umol = ifelse(abs(CO2_flux_umol) > 60, NA, CO2_flux_umol)
+                                   CO2_flux_umol = ifelse(CO2_flux_umol < -100, NA, CO2_flux_umol), 
+                                   CO2_flux_umol = ifelse(CO2_flux_umol > 60, NA, CO2_flux_umol)
 )
 
 flux_grad_p1p2_2018_2024$Date <- as.numeric(flux_grad_p1p2_2018_2024$` Date`)
@@ -757,10 +760,25 @@ flux_ec_2018_2024 %>%
 model <- lm(NEE_U50_orig ~ CO2_flux_umol, data = filter(flux_ec_2018_2024, Year == 2023))
 summary(model)
 
+flux_grad_p1p2_2018_2024 %>%
+  filter(Year == 2024) %>% 
+  ggplot(aes(x = Date, y = CO2_flux_umol))+
+  geom_point(alpha = 0.5)+
+  geom_vline(xintercept = 121, color = "red", linetype = "dashed")+
+  #facet_grid(vars(variables), vars(Year))+
+  facet_wrap(Year~., nrow = 1)+
+  theme_bw()+
+  ylab("NEE (umolm-2s-1)")+
+  xlab("DOY")
+  theme(
+    legend.position = "bottom"
+  )
 
 # graph
 
 flux_ec_2018_2024 %>%
+  filter(!c(Year == 2018 & doy < 121)) %>% 
+  
   # filter(!c(Year == 2018 & doy < 121)) %>% 
   # filter(!c(Year == 2024 & doy > 121)) %>% 
   # group_by(Year, doy) %>%
@@ -803,6 +821,9 @@ check <- flux_ec_2018_2024 %>%
     NEE_U50_f = mean(NEE_U50_f, na.rm = TRUE),
     CO2_flux_umol = mean(CO2_flux_umol, na.rm = TRUE)
   )
+
+
+
 
 # checking specfiic data to fill gaps
 
@@ -877,11 +898,27 @@ flux_grad_p3p4_2018_2023 <- bind_rows(flux_grad_p3_2023, flux_grad_p4_2023, flux
 flux_grad_p3p4_2018_2023$CO2_flux_umol <- (as.numeric(flux_grad_p3p4_2018_2023$`CO2 flux`) / 44.01) 
 
 flux_grad_p3p4_2018_2023 <- mutate(flux_grad_p3p4_2018_2023, 
-                                   CO2_flux_umol = ifelse(abs(CO2_flux_umol) > 60, NA, CO2_flux_umol)
+                                   CO2_flux_umol = ifelse(CO2_flux_umol < -100, NA, CO2_flux_umol), 
+                                   CO2_flux_umol = ifelse(CO2_flux_umol > 60, NA, CO2_flux_umol)
 )
 
 flux_grad_p3p4_2018_2023$Date <- as.numeric(flux_grad_p3p4_2018_2023$` Date`)
 flux_grad_p3p4_2018_2023$Year <- as.numeric(flux_grad_p3p4_2018_2023$`% Year`)
+
+flux_grad_p3p4_2018_2023 %>%
+  filter(Year == 2024) %>% 
+  ggplot(aes(x = Date, y = CO2_flux_umol))+
+  geom_point(alpha = 0.5)+
+  geom_vline(xintercept = 121, color = "red", linetype = "dashed")+
+  #facet_grid(vars(variables), vars(Year))+
+  facet_wrap(Year~., nrow = 1)+
+  theme_bw()+
+  ylab("NEE (umolm-2s-1)")+
+  xlab("DOY")
+theme(
+  legend.position = "bottom"
+)
+
 
 # loading eddy data to compare
 
