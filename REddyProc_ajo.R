@@ -1,10 +1,10 @@
 # readyproc data processing
-# 06/12/2024
+# 03/18/2025
 # agustin olivo
 # aolivo@uoguelph.ca
 
-########################################################################
-####################### general ###################################
+#######################################################################
+####################### general information ###################################
 
 # install packages
 install.packages("REddyProc")
@@ -45,12 +45,12 @@ setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_pro
 # before starting, please clean everything from your global environment.Proceed with step 1, one plot at a time. Then with step 2. Once you finish estimating everything for one plot, clean everything in your environment again, and go back to Step 1 for the new plot.
 
 
-########################################################################
+#######################################################################
 
-###############################################################################
+#######################################################################
 ####################### STEP 1: load data for each plot #######################
 
-####################### plot 1-2 ######################################
+### plot 1-2 
 
 # The workflow starts with importing the half-hourly data. 
 
@@ -102,10 +102,7 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
   c(121,2024)
 )))
 
-
-#######################################################################
-
-###################### plot 3-4 #######################################
+### plot 3-4 
 
 EddyData_2018_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2018_R.txt")
 EddyData_2019_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2019_R.txt")
@@ -149,9 +146,7 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
 #######################################################################
 
 #######################################################################
-
-########################################################################
-########################### STEP 2: main processing ###################################
+####################### STEP 2: main processing ###################################
 
 # there are a few different options on how to conduct this analysis; the one below considers generating different ustar seasons, different ustar thresholds for them, and also estimating the probability associated with those; in another files that Shannon had compiled, a slightly different approach is used where the seasons are generated, but the probability associated wit the ustar tresholds are not estimated.
 
@@ -291,13 +286,13 @@ EProc$sSetLocationInfo(LatDeg = 43.64079, LongDeg = -80.41301, TimeZoneHour = -5
 
 # night-time method
 
-EProc$sMRFluxPartitionUStarScens() # night time partitioning -> Reco, GPP
+EProc$sMRFluxPartitionUStarScens()
 EProc$sApplyUStarScen(EProc$sMRFluxPartition)
 grep("GPP.*_f$|Reco",names(EProc$sExportResults()), value = TRUE) # extract the name of the variables that will be used
 
 # daytime method
 
-EProc$sGLFluxPartitionUStarScens()	# day time partitioning -> Reco_DT, GPP_DT
+EProc$sGLFluxPartitionUStarScens()
 EProc$sApplyUStarScen(EProc$sGLFluxPartition)
 grep("GPP_DT_.*_f$|Reco", names(EProc$sExportResults()), value = TRUE)
 
@@ -326,6 +321,12 @@ CombinedData$doy <- CombinedData$DoY
 # Reco_DT_U50 = Reco value obtained with day-time partitioning, considering the median of the distribution of u* threshold
 
 # plot to look at the raw NEE data + gap-filled NEE data (for half-hourly observations and for daily means)
+
+
+#######################################################################
+
+#######################################################################
+########### other items in the code not strictly needed #######
 
 CombinedData %>%
   #filter(!c(Year == 2018 & doy < 121)) %>% 
@@ -456,10 +457,6 @@ daily_averages_nee <- CombinedData %>%
     n_obs_NEE_U50_f = sum(!is.na(NEE_U50_f)),
     NEE_U50_f = ifelse(n_obs_NEE_U50_f >= 24, mean(NEE_U50_f, na.rm = TRUE), NA_real_)) %>%
   select(-c(n_obs_nee,n_obs_NEE_U50_orig,n_obs_NEE_U50_f ))
-
-
-
-
 
 # night-time partitioning vs day-time partitioning
 
@@ -627,10 +624,10 @@ combined_inner %>%
   ylab("Annual cumulative C flux (g/m2/year)")
 
 
-########################################################################
+#######################################################################
 
-########################################################################
-###### importing flux gradient data co2 ####################################
+#######################################################################
+###### importing flux gradient data co2 ###############################
 
 # p1/2
 
@@ -823,8 +820,6 @@ check <- flux_ec_2018_2024 %>%
   )
 
 
-
-
 # checking specfiic data to fill gaps
 
 #Current gaps in the data are for DOY 268-340 in 2019, and DOY 225 to 305 in 2023; this is the relationship between EC and flux gradient points in 2020 and 2022 (two other soybean years), for the period doy 268-305. Based on what was discussed with Claudia, this could be used as a justification to gap-fill with flux gradient data.
@@ -839,7 +834,6 @@ flux_ec_2018_2024 %>%
 
 model <- lm(NEE_U50_orig ~ CO2_flux_umol, data = filter(flux_ec_2018_2024, Year %in% c(2020, 2022) & DoY %in% c(225:340)))
 summary(model)
-
 
 # converting from umol/m2/s to g/m2/day
 
@@ -919,7 +913,6 @@ theme(
   legend.position = "bottom"
 )
 
-
 # loading eddy data to compare
 
 CombinedData$Date <- CombinedData$DoY + CombinedData$Hour / 24
@@ -992,20 +985,4 @@ check <- flux_ec_2018_2023 %>%
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-########################################################################
+#######################################################################

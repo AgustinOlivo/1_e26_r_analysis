@@ -422,7 +422,9 @@ mgmt_dates_p1 <- as.data.frame( do.call( rbind, list(
   c(138,2022), # plating
   c(276,2022), # harvest
   c(136,2023), # plating
-  c(277,2023) # harvest
+  c(277,2023), # harvest
+  c(143,2024) # harvest
+  
 )))
 colnames(mgmt_dates_p1) <- c("doy", "year")
 
@@ -448,7 +450,9 @@ mgmt_dates_p3 <- as.data.frame( do.call( rbind, list(
   c(307,2021), # harvest
   c(138,2022), # plating
   c(276,2022), # harvest
-  c(221,2023) # harvest
+  c(221,2023), # harvest
+  c(143,2024)
+  
 )))
 colnames(mgmt_dates_p3) <- c("doy", "year")
 
@@ -510,7 +514,10 @@ fert_dates_p1 <- as.data.frame( do.call( rbind, list(
   c(137,2018), # urea broadcasted + incorporated
   c(138,2018), # starter
   c(150,2019), # P blend
-  c(168,2021) # UAN injected
+  c(168,2021), # UAN injected
+  c(143,2024),
+  c(176,2024)
+  
 )))
 colnames(fert_dates_p1) <- c("doy", "year")
 
