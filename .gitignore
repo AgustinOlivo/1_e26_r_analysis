@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# ignore folders
+obs_data/
+x_older/
+plots/
