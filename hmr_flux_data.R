@@ -2,12 +2,18 @@
 install.packages("HMR")  # Uncomment this line if HMR is not installed
 library(HMR)
 installed.packages()["HMR", ]
+X11()
 
 # Load the dataset from a CSV file (update the filename as needed)
-data <- read.csv("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/z_other/2023_CC4R_Exp.A gs_HMR Input.csv")
+data <- read.csv("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_projects/1_modeling_div_conv/1_modeling/1_e26_r_analysis/2023_CC4R_Exp.A gs_HMR Input.csv")
 
 # Inspect the first few rows of the dataset to verify the structure
 head(data)
+str(data)
+
+subset_data <- subset(data, Series == "102_45106")  # Change to any valid Series name
+flux_result <- HMR.fit(data$Time, data$Concentration)
+print(flux_result)
 
 # Ensure the column names match the expected format
 colnames(data)  # Expected: "Series", "V", "A", "Time", "Concentration"
@@ -16,8 +22,9 @@ colnames(data)  # Expected: "Series", "V", "A", "Time", "Concentration"
 # This function fits different models (Linear, Quadratic, Nonlinear HMR) to your data 
 # and selects the best one based on statistical criteria.
 
-flux_result <- HMR.fit(data$Time, data$Concentration)
-
+flux_result <- HMR(data, sep=',' )
+HMR(filename='2023_CC4R_Exp.A gs_HMR Input.csv', sep=',')
+getwd()
 # Print model details
 summary(flux_result)
 
