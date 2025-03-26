@@ -1118,7 +1118,7 @@ mod_co2_p1 %>%
     axis.text.x = element_text(angle = 90))+
   ylab("GPP (g C/m2/day)")+
   geom_vline(data = filter(mgmt_dates_p1, year %in% c(2018:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
-
+#asdasd
 
 # respiration
 
