@@ -1,6 +1,9 @@
 #########################################################################
-########## analysis of diverse vs conventional rotation - E26 ###########
+########## R script - Conventional vs Diverse Rotation Project  ###########
 #########################################################################
+
+# owner: Agustin Olivo - aolivo@uoguelph.ca
+# project: comparing environmental and productivity outcomes for a conventional and a diverse crop rotation
 
 ##################################
 ####### GENERAL #########
@@ -237,6 +240,8 @@ obs_yield$type <- "obs"
 obs_yield$grain_t_ha <- as.numeric(obs_yield$grain_t_ha)
 obs_yield$crop_yield_obs_kg_ha <- obs_yield$grain_t_ha*1000
 
+# separating data by plot
+
 obs_yield_p1 <- filter(obs_yield, plot == "1")
 obs_yield_p2 <- filter(obs_yield, plot == "2")
 obs_yield_p3 <- filter(obs_yield, plot == "3")
@@ -249,16 +254,20 @@ obs_soil_temp$date <- as.Date(obs_soil_temp$Date, format = "%m/%d/%Y")
 obs_soil_temp$year <- year(obs_soil_temp$date)
 obs_soil_temp$month <- month(obs_soil_temp$date)
 
+# separating data by plot
+
 obs_soil_temp_p1 <- filter(obs_soil_temp, Plot == "P1")
 obs_soil_temp_p2 <- filter(obs_soil_temp, Plot == "P2")
 obs_soil_temp_p3 <- filter(obs_soil_temp, Plot == "P3")
 obs_soil_temp_p4 <- filter(obs_soil_temp, Plot == "P4")
 
-### import observed data soil water
+### import observed data soil water (water-filled pore space and volumetric water content)
 obs_soil_wfps <- read.csv("obs_data/measured_wfps/wfps_5_25.csv", header = TRUE)
 obs_soil_wfps$date <- as.Date(obs_soil_wfps$date, format = "%m/%d/%Y")
 obs_soil_wfps$year <- year(obs_soil_wfps$date)
 obs_soil_wfps$month <- month(obs_soil_wfps$date)
+
+# separating data by plot
 
 obs_soil_wfps_p1 <- filter(obs_soil_wfps, plot == "P1")
 obs_soil_wfps_p2 <- filter(obs_soil_wfps, plot == "P2")
@@ -269,6 +278,8 @@ obs_soil_vwc <- read_excel("obs_data/measured_vwc/e26_vwc.xlsx")
 obs_soil_vwc$date <- as.Date(obs_soil_vwc$date, format = "%m/%d/%Y")
 obs_soil_vwc$year <- year(obs_soil_vwc$date)
 obs_soil_vwc$month <- month(obs_soil_vwc$date)
+
+# separating data by plot
 
 obs_soil_vwc_p1 <- filter(obs_soil_vwc, plot == "P1")
 obs_soil_vwc_p2 <- filter(obs_soil_vwc, plot == "P2")
@@ -282,10 +293,14 @@ obs_soil_n$date <- parse_date_time(obs_soil_n$date, orders = c("dmy", "d/m/y", "
 obs_soil_n$date <- as.Date(obs_soil_n$date)
 obs_soil_n$doy <- obs_soil_n$date_jul
 
+# separating data by plot
+
 obs_soil_n_p1 <- filter(obs_soil_n, plot == "P1" & year > 2017)
 obs_soil_n_p2 <- filter(obs_soil_n, plot == "P2" & year > 2017)
 obs_soil_n_p3 <- filter(obs_soil_n, plot == "P3" & year > 2017)
 obs_soil_n_p4 <- filter(obs_soil_n, plot == "P4" & year > 2017)
+
+# separating data by plot
 
 obs_soil_n_p1_long <- filter(obs_soil_n, plot == "P1")
 obs_soil_n_p2_long <- filter(obs_soil_n, plot == "P2")
@@ -442,13 +457,13 @@ fert_dates_p3 <- as.data.frame( do.call( rbind, list(
 )))
 colnames(fert_dates_p3) <- c("doy", "year")
 
-# loading weather data.
+# loading weather data to include in some of the graphs
 
 file_directory <- "obs_data/climate/"
 file_list <- list.files(path = file_directory, pattern = "*.txt", full.names = TRUE)
 col_names <- c("doy", "temp_min", "temp_max", "prec", "wind", "radi", "hum")
 
-# Read each file, add the year column, and remove columns with only white spaces or "unknown"
+# Read each file weather file, add the year column, and remove columns with only white spaces or "unknown"
 df_list <- lapply(file_list, function(file_path) {
   # Extract the year from the file name (assuming the file name is in the format "eloraYYYY.txt")
   year <- gsub("elora|\\.txt", "", basename(file_path))  # Extract year from file name
@@ -488,9 +503,11 @@ climate <- do.call(rbind, df_list)
 ####### CONVENTIONAL ROTATION #####
 ###################################
 
+# loading data from DNDC ouputs related to the conventional rotation in my project, running statistics, and creating graphs (all by variable). 
+
 ###### CROP YIELD, CROP C #######
 
-### import modeled data for p1
+### import modeled yield/c data for p1
 
 file_paths <- list.files(path = "C:/DNDC/Result/Record/Site", pattern = "\\.txt$", full.names = TRUE) 
 results <- do.call(rbind, lapply(file_paths, extract_info))
@@ -1558,6 +1575,8 @@ metrics_n2o_df
 ####### DIVERSE ROTATION ##########
 ###################################
 
+# loading data from DNDC ouputs related to the diverse rotation in my project, running statistics, and creating graphs (all by variable). 
+
 ###### CROP YIELD, CROP C #######
 
 ### import observed data crop yield specifically for p3 as a few things are different
@@ -2415,10 +2434,9 @@ metrics
 
 #########################
 
-
-############################################################
-################# OLDER CODE ###############################
-############################################################
+############################################################################################
+################# OLDER CODE - Do not look below this point ###############################
+###########################################################################################
 
 ############################################################
 #### final code for scenarios  - ALL ROTATION ######
