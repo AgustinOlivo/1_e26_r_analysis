@@ -37,8 +37,6 @@ library("ggh4x")
 library(writexl)
 library(usethis)
 
-use_git()
-
 # suggested colors for graphs
 c("#F0E442", "#D55E00","#CC79A7","#E69F00", "#0072B2", "#009E73","#56B4E9" , "#000000" ,"#999999")
 
@@ -411,12 +409,21 @@ fert_dates_p1 <- as.data.frame( do.call( rbind, list(
 colnames(fert_dates_p1) <- c("doy", "year")
 
 fert_dates_p3 <- as.data.frame( do.call( rbind, list(
+  c(126,2008),
+  c(127,2008),
+  c(174,2009),
+  c(132,2009),
+  c(104,2011),
+  c(292,2011),
   c(130,2012),
   c(131,2012),
+  c(293,2012),
   c(128,2013),
   c(129,2013),
+  c(317,2013),
+  c(146,2014),
   c(149,2014),
-  c(178,2014),
+  c(332,2014),
   c(133,2015),
   c(176,2015),
   c(133,2016),
@@ -488,14 +495,25 @@ climate <- do.call(rbind, df_list)
 file_paths <- list.files(path = "C:/DNDC/Result/Record/Site", pattern = "\\.txt$", full.names = TRUE) 
 results <- do.call(rbind, lapply(file_paths, extract_info))
 mod_yield_p1 <- results %>%
-  filter(year > 6) %>%
+  #filter(year > 6) %>%
   mutate(year = case_when(
-    year == 7 ~ 2018,
-    year == 8 ~ 2019,
-    year == 9 ~ 2020,
-    year == 10 ~ 2021,
-    year == 11 ~ 2022,
-    year == 12 ~ 2023
+    year == 1 ~ 2008,
+    year == 2 ~ 2009,
+    year == 3 ~ 2010,
+    year == 4 ~ 2011,
+    year == 5 ~ 2012,
+    year == 6 ~ 2013,
+    year == 7 ~ 2014,
+    year == 8 ~ 2015,
+    year == 9 ~ 2016,
+    year == 10 ~ 2017,
+    year == 11 ~ 2018,
+    year == 12 ~ 2019,
+    year == 13 ~ 2020,
+    year == 14 ~ 2021,
+    year == 15 ~ 2022,
+    year == 16 ~ 2023,
+    year == 17 ~ 2024
   ))
 
 mod_yield_p1$type <- "mod"
@@ -538,7 +556,7 @@ combined_data %>%
 
 # yield 
 
-# metrics_yield_df <- data.frame( # data frame to store results from multiple runs 
+# metrics_yield_df <- data.frame( # data frame to store results from multiple runs
 #   PBIAS = numeric(0),
 #   NSE = numeric(0),
 #   RMSE = numeric(0),
@@ -736,41 +754,41 @@ combined_data_water %>%
 
 # vwc_5
 
-combined_data2 %>% 
-  filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
-  ggplot(aes(x = Day, y = vwc_5))+
-  geom_point()+
-  geom_point(aes(x = Day, y = VWC_5_m3_m3 *100), 
-             color = "#D55E00")+
-  facet_wrap(year.x ~ ., nrow = 5) +
-  theme_bw()
-
-combined_data2 %>% 
-  filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
-  ggplot(aes(x = Day, y = vwc_25))+
-  geom_point()+
-  geom_point(aes(x = Day, y = VWC_25_m3_m3*100), 
-             color = "#009E73")+
-  facet_wrap(year.x ~ ., nrow = 5) +
-  theme_bw()
-
-combined_data2 %>% 
-  filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
-  ggplot(aes(x = Day, y = vwc_55))+
-  geom_point()+
-  geom_point(aes(x = Day, y = VWC_55_m3_m3*100), 
-             color = "#009E73")+
-  facet_wrap(year.x ~ ., nrow = 5) +
-  theme_bw()
-
-combined_data2 %>% 
-  filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
-  ggplot(aes(x = Day, y = vwc_85))+
-  geom_point()+
-  geom_point(aes(x = Day, y = VWC_85_m3_m3*100), 
-             color = "#009E73")+
-  facet_wrap(year.x ~ ., nrow = 5) +
-  theme_bw()
+# combined_data2 %>% 
+#   filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
+#   ggplot(aes(x = Day, y = vwc_5))+
+#   geom_point()+
+#   geom_point(aes(x = Day, y = VWC_5_m3_m3 *100), 
+#              color = "#D55E00")+
+#   facet_wrap(year.x ~ ., nrow = 5) +
+#   theme_bw()
+# 
+# combined_data2 %>% 
+#   filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
+#   ggplot(aes(x = Day, y = vwc_25))+
+#   geom_point()+
+#   geom_point(aes(x = Day, y = VWC_25_m3_m3*100), 
+#              color = "#009E73")+
+#   facet_wrap(year.x ~ ., nrow = 5) +
+#   theme_bw()
+# 
+# combined_data2 %>% 
+#   filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
+#   ggplot(aes(x = Day, y = vwc_55))+
+#   geom_point()+
+#   geom_point(aes(x = Day, y = VWC_55_m3_m3*100), 
+#              color = "#009E73")+
+#   facet_wrap(year.x ~ ., nrow = 5) +
+#   theme_bw()
+# 
+# combined_data2 %>% 
+#   filter(Day > 90 & Day < 335) %>% # day = 90 is March 31st, and day = 335 is dec 1st
+#   ggplot(aes(x = Day, y = vwc_85))+
+#   geom_point()+
+#   geom_point(aes(x = Day, y = VWC_85_m3_m3*100), 
+#              color = "#009E73")+
+#   facet_wrap(year.x ~ ., nrow = 5) +
+#   theme_bw()
 
 ### statistics
 
@@ -853,18 +871,24 @@ mod_conv_soil_n$date_jul <- mod_conv_soil_n$Day_
 mod_conv_soil_n <- mod_conv_soil_n %>%
   #filter(Year_ > 6) %>%
   mutate(year = case_when(
-    Year_ == 1 ~ 2012,
-    Year_ == 2 ~ 2013,
-    Year_ == 3 ~ 2014,
-    Year_ == 4 ~ 2015,
-    Year_ == 5 ~ 2016,
-    Year_ == 6 ~ 2017,
-    Year_ == 7 ~ 2018,
-    Year_ == 8 ~ 2019,
-    Year_ == 9 ~ 2020,
-    Year_ == 10 ~ 2021,
-    Year_ == 11 ~ 2022,
-    Year_ == 12 ~ 2023
+    Year_ == 1 ~ 2008,
+    Year_ == 2 ~ 2009,
+    Year_ == 3 ~ 2010,
+    Year_ == 4 ~ 2011,
+    Year_ == 5 ~ 2012,
+    Year_ == 6 ~ 2013,
+    Year_ == 7 ~ 2014,
+    Year_ == 8 ~ 2015,
+    Year_ == 9 ~ 2016,
+    Year_ == 10 ~ 2017,
+    Year_ == 11 ~ 2018,
+    Year_ == 12 ~ 2019,
+    Year_ == 13 ~ 2020,
+    Year_ == 14 ~ 2021,
+    Year_ == 15 ~ 2022,
+    Year_ == 16 ~ 2023,
+    Year_ == 17 ~ 2024
+    
   ))
 
 mod_conv_soil_n$date <- as.Date(paste(mod_conv_soil_n$year, mod_conv_soil_n$date_jul), format = "%Y %j")
@@ -877,18 +901,18 @@ mod_conv_soil_n$no3_0_15 <- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO
 # plotting soil N for the entire period 2012-2023
 
 mod_conv_soil_n %>%
-  #filter(Year_ < 7) %>%
+  #filter(year > 2017) %>%
   ggplot(aes(x = doy, y = no3_0_15))+
   geom_line(colour = "#009E73", alphha = 0.75, size = 0.75)+
-  geom_point(data = filter(obs_soil_n_p1_long, year %in% c(2012:2023)), aes(x=doy, y=no3_kg_n_ha), colour = "#009E73", alpha=0.5)+
-  geom_point(data = filter(obs_soil_n_p1_long, year %in% c(2012:2023)), aes(x=doy, y=nh4_kg_n_ha), colour = "#D55E00", alpha=0.5)+
-  geom_line(data = mod_conv_soil_n, aes(x=doy, y=nh4_0_15), colour = "#D55E00", alpha=0.75, size = 0.75)+
+  geom_point(data = filter(obs_soil_n_p1_long, year %in% c(2008:2023)), aes(x=doy, y=no3_kg_n_ha), colour = "#009E73", alpha=0.5)+
+  geom_point(data = filter(obs_soil_n_p1_long, year %in% c(2008:2023)), aes(x=doy, y=nh4_kg_n_ha), colour = "#D55E00", alpha=0.5)+
+  geom_line(data = filter(mod_conv_soil_n, year > 2008), aes(x=doy, y=nh4_0_15), colour = "#D55E00", alpha=0.75, size = 0.75)+
   
   facet_wrap(year~.)+
   theme_bw()+
-  geom_vline(data = filter(fert_dates_p1, year %in% c(2012:2023)), aes(xintercept = doy), color = "#CC79A7", linetype = "dashed", size = 1)+
+  geom_vline(data = filter(fert_dates_p1, year %in% c(2008:2023)), aes(xintercept = doy), color = "#CC79A7", linetype = "dashed", size = 1)+
   
-  geom_point(data = filter(mgmt_dates_p1, year %in% c(2012:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)+
+  geom_point(data = filter(mgmt_dates_p1, year %in% c(2008:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)+
   ylab("Soil N (kg N/ha)")
 
 # mod_conv_soil_n %>%
@@ -913,27 +937,28 @@ mod_conv_soil_n %>%
 
 # plot other N losses as reported by DNDC
 
-# mod_conv_soil_n %>% 
-#   group_by(year) %>% 
-#   summarise(
-#     n2o = sum(N2O.flux_),
-#     n2 = sum(N2.flux_),
-#     nh3 = sum(NH3.flux_),
-#     no3_l = sum(NO3.leach_),
-#     sum = n2o + n2 + nh3 + no3_l 
-#   ) %>% 
-#   pivot_longer(
-#     cols = c(n2o, n2,  nh3, no3_l,  sum),
-#     names_to = "losses",
-#     values_to = "value"
-#   ) %>% 
-#   ggplot(aes(x = losses, y = value, fill = losses))+
-#   geom_col(position = position_dodge(), color = "black")+
-#   facet_wrap(year~.)+
-#   theme_bw()+
-#   ylab("Annual N losses (kg N/ha)")+
-#   xlab("Pathways")+
-#   geom_text(aes(label = round(value, digits = 1)))
+mod_conv_soil_n %>%
+  #filter(year>2017) %>% 
+  group_by(year) %>%
+  summarise(
+    n2o = sum(N2O.flux_),
+    n2 = sum(N2.flux_),
+    nh3 = sum(NH3.flux_),
+    no3_l = sum(NO3.leach_),
+    sum = n2o + n2 + nh3 + no3_l
+  ) %>%
+  pivot_longer(
+    cols = c(n2o, n2,  nh3, no3_l,  sum),
+    names_to = "losses",
+    values_to = "value"
+  ) %>%
+  ggplot(aes(x = losses, y = value, fill = losses))+
+  geom_col(position = position_dodge(), color = "black")+
+  facet_wrap(year~.)+
+  theme_bw()+
+  ylab("Annual N losses (kg N/ha)")+
+  xlab("Pathways")+
+  geom_text(aes(label = round(value, digits = 1)))
 # 
 # 
 # # graphs
@@ -1094,7 +1119,9 @@ mod_co2_p1 <- mod_co2_p1 %>%
     Year == 9 ~ 2020,
     Year == 10 ~ 2021,
     Year == 11 ~ 2022,
-    Year == 12 ~ 2023
+    Year == 12 ~ 2023,
+    Year == 1 ~ 2024
+    
   ))
 
 mod_co2_p1$date <- as.Date(paste(mod_co2_p1$year, mod_co2_p1$date_jul), format = "%Y %j")
@@ -1457,24 +1484,38 @@ mod_n2o_p1$date_jul <- mod_n2o_p1$Day
 mod_n2o_p1$n2o_flux_g_n_ha_d <- mod_n2o_p1$N2O.flux*1000
 
 mod_n2o_p1 <- mod_n2o_p1 %>%
-  filter(Year > 6) %>%
+  #filter(Year > 6) %>%
   mutate(year = case_when(
-    Year == 7 ~ 2018,
-    Year == 8 ~ 2019,
-    Year == 9 ~ 2020,
-    Year == 10 ~ 2021,
-    Year == 11 ~ 2022,
-    Year == 12 ~ 2023
+    Year == 1 ~ 2008,
+    Year == 2 ~ 2009,
+    Year == 3 ~ 2010,
+    Year == 4 ~ 2011,
+    Year == 5 ~ 2012,
+    Year == 6 ~ 2013,
+    Year == 7 ~ 2014,
+    Year == 8 ~ 2015,
+    Year == 9 ~ 2016,
+    Year == 10 ~ 2017,
+    
+    Year == 11 ~ 2018,
+    Year == 12 ~ 2019,
+    Year == 13 ~ 2020,
+    Year == 14 ~ 2021,
+    Year == 15 ~ 2022,
+    Year == 16 ~ 2023,
+    Year == 17 ~ 2024,
   ))
 
 mod_n2o_p1$date <- as.Date(paste(mod_n2o_p1$year, mod_n2o_p1$date_jul), format = "%Y %j")
 mod_n2o_p1$doy <- mod_n2o_p1$Day
 
 # graphs 
-ggplot(data = mod_n2o_p1, aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_d)) +
+mod_n2o_p1 %>%
+  filter(year %in% c(2018:2024)) %>% 
+  ggplot(aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_d)) +
   geom_line(size = 1, color = "darkgray") +
-  geom_line(data = obs_n2o_p1p2, aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
-  facet_wrap(year ~ ., nrow = 6) +
+  geom_line(data = filter(obs_n2o_p1p2, year < 2025), aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
+  facet_wrap(year ~ ., ncol = 2) +
   # scale_x_date(
   #   date_breaks = "10 days",          # Breaks every 10 days
   #   date_labels = "%d/%m"          # Format as DD/MM
@@ -1483,11 +1524,11 @@ ggplot(data = mod_n2o_p1, aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_d)) +
   theme(
     axis.text.x = element_text(angle = 90))+
   ylab("N2O emissions (g N/ha/day)")+
-  geom_vline(data = filter(fert_dates_p1, year %in% c(2018:2023)), aes(xintercept = doy), color = "darkred", linetype = "dashed", size = 1)+
+  geom_vline(data = filter(fert_dates_p1, year %in% c(2018:2024)), aes(xintercept = doy), color = "darkred", linetype = "dashed", size = 1)+
   
-  geom_point(data = filter(mgmt_dates_p1, year %in% c(2018:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)+
-  geom_point(data = combined_data_water, aes(x = doy, y = X5cm * 100), size = 1, color = "blue", alpha = 0.5)+
-  geom_point(data = combined_data_water, aes(x = doy, y = wfps_5), size = 1, color = "#D55E00", alpha = 0.5)
+  geom_point(data = filter(mgmt_dates_p1, year %in% c(2018:2024)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
+  # geom_point(data = combined_data_water, aes(x = doy, y = X5cm * 100), size = 1, color = "blue", alpha = 0.5)+
+  # geom_point(data = combined_data_water, aes(x = doy, y = wfps_5), size = 1, color = "#D55E00", alpha = 0.5)
 
 combined_data_water$year = combined_data_water$year.x
 
@@ -1499,14 +1540,14 @@ predicted <- merged_data$n2o_flux_g_n_ha_d
 observed <- merged_data$n2o_flux_g_n_ha_day
 metrics_n2o <- calculate_metrics(observed, predicted)
 
-# metrics_n2o_df <- data.frame(
-#   PBIAS = numeric(0),
-#   NSE = numeric(0),
-#   RMSE = numeric(0),
-#   RRMSE_percent = numeric(0),
-#   Index_of_Agreement_d = numeric(0),
-#   R2 = numeric(0)
-# )
+metrics_n2o_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
 
 metrics_n2o_df <- rbind(metrics_n2o_df, metrics_n2o)
 metrics_n2o_df
@@ -1587,14 +1628,26 @@ long_df <- mod_yield %>%
 # Combine with crop types
 mod_yield_p3 <- left_join(long_df, crop_types, by = c("Year", "crop_order")) %>%
   replace_na(list(grain_c = 0, leaf_c = 0, stem_c = 0, root_c = 0)) %>%
-  filter(Year > 6) %>%
+  #filter(Year > 6) %>%
   mutate(year = case_when(
-    Year == 7 ~ 2018,
-    Year == 8 ~ 2019,
-    Year == 9 ~ 2020,
-    Year == 10 ~ 2021,
-    Year == 11 ~ 2022,
-    Year == 12 ~ 2023
+    Year == 1 ~ 2008,
+    Year == 2 ~ 2009,
+    Year == 3 ~ 2010,
+    Year == 4 ~ 2011,
+    Year == 5 ~ 2012,
+    Year == 6 ~ 2013,
+    Year == 7 ~ 2014,
+    Year == 8 ~ 2015,
+    Year == 9 ~ 2016,
+    Year == 10 ~ 2017,
+    Year == 11 ~ 2018,
+    Year == 12 ~ 2019,
+    Year == 13 ~ 2020,
+    Year == 14 ~ 2021,
+    Year == 15 ~ 2022,
+    Year == 16 ~ 2023,
+    Year == 17 ~ 2024
+    
     
   )) %>% 
   mutate(crop_type = case_when(
@@ -1624,12 +1677,14 @@ header_row1 <- c("year", "day", "crop1", "crop1_leaf_c", "crop1_stem_c", "crop1_
 colnames(crop_data) <- header_row1
 
 crop_data <- crop_data %>%  # day of the year when cover crops were sampled: 2018 (278), 2019 (139), 2020 (315), 2021 (130, 292), 
-  filter((year == 7 & day == 278) | 
-           (year == 8 & day == 139) | 
-           (year == 9 & day == 315) | 
-           (year == 10 & day %in% c(130, 292)| 
-              (year == 11 & day == 120) | 
-              (year == 12 & day == 314)
+  filter((year == 11 & day == 278) | 
+           (year == 12 & day == 139) | 
+           (year == 13 & day == 315) | 
+           (year == 14 & day %in% c(130, 292)| 
+              (year == 15 & day == 120) | 
+              (year == 16 & day == 314) |
+              (year == 17 & day == 120)  
+              
             
            )) %>% 
   mutate(
@@ -1651,7 +1706,7 @@ long_data <- crop_data %>%
     crop_order = as.integer(sub("crop(\\d)_biomass", "\\1", biomass_type))  # Correctly extract crop number
   ) %>%
   select(year, day, crop_order, biomass_value) %>% 
-  filter((year == 7 & crop_order %in% c(2,3)) | (year == 8 & crop_order %in% c(1,2)) | (year == 9 & crop_order == 2) | (year == 10 & crop_order %in% c(1,3, 4)) | (year == 11 & crop_order == 1) | (year == 12 & crop_order == 2)) %>% 
+  filter((year == 11 & crop_order %in% c(2)) | (year == 12 & crop_order %in% c(1)) | (year == 13 & crop_order == 2) | (year == 14 & crop_order %in% c(1,3)) | (year == 15 & crop_order == 1) | (year == 16 & crop_order == 2) | (year == 17 & crop_order == 1)) %>% 
   filter(!biomass_value == 0)
 
 mod_yield_p3 <- mod_yield_p3 %>%
@@ -1665,6 +1720,8 @@ mod_yield_p3 <- mod_yield_p3 %>%
   mutate(across(everything(), ~ ifelse(. == "rye", "cover crop", .)))
 
 # graph
+
+combined_data <- merge(obs_yield_p3, mod_yield_p3, by = c("year", "crop_type", "crop_order"))
 
 combined_data %>% 
   pivot_longer(
@@ -1691,15 +1748,110 @@ combined_data %>%
 
 # yield 
 
-combined_data <- merge(obs_yield_p3, mod_yield_p3, by = c("year", "crop_type", "crop_order"))
+# metrics_yield_df <- data.frame( # data frame to store results from multiple runs
+#   PBIAS = numeric(0),
+#   NSE = numeric(0),
+#   RMSE = numeric(0),
+#   RRMSE_percent = numeric(0),
+#   Index_of_Agreement_d = numeric(0),
+#   R2 = numeric(0)
+# )
 
 modeled <- combined_data$crop_yield_mod_kg_ha
 observed <- combined_data$crop_yield_obs_kg_ha
-calculate_metrics(observed, modeled)
+metrics_yield <- calculate_metrics(observed, modeled)
+
+metrics_yield_df <- rbind(metrics_yield_df, metrics_yield)
+metrics_yield_df
 
 ###### SOIL TEMPERATURE ###########
 
-# to be set up based on conventional rotation code
+mod_conv_soil_temp <- read.csv("C:/DNDC/Result/Record/Site/Day_SoilClimate_1.csv", header = FALSE)
+mod_conv_soil_temp <- mod_conv_soil_temp[, c(1:27)]
+colnames(mod_conv_soil_temp) <- mod_conv_soil_temp[3,]
+mod_conv_soil_temp <- mod_conv_soil_temp[-c(1:3),]
+mod_conv_soil_temp <- data.frame(lapply(mod_conv_soil_temp, as.numeric))
+mod_conv_soil_temp$date_jul <- mod_conv_soil_temp$Day
+
+mod_conv_soil_temp <- mod_conv_soil_temp %>%
+  filter(Year > 6) %>%
+  mutate(year = case_when(
+    Year == 7 ~ 2018,
+    Year == 8 ~ 2019,
+    Year == 9 ~ 2020,
+    Year == 10 ~ 2021,
+    Year == 11 ~ 2022,
+    Year == 12 ~ 2023
+  ))
+
+mod_conv_soil_temp$date <- as.Date(paste(mod_conv_soil_temp$year, mod_conv_soil_temp$date_jul), format = "%Y %j")
+
+mod_conv_soil_temp$temp_25 <- (mod_conv_soil_temp$X20cm + mod_conv_soil_temp$X30cm) / 2
+mod_conv_soil_temp$temp_55 <- (mod_conv_soil_temp$X50cm + mod_conv_soil_temp$X60cm) / 2
+mod_conv_soil_temp$temp_85 <- (mod_conv_soil_temp$X80cm + mod_conv_soil_temp$X90cm) / 2
+
+
+# graphs for plot 1
+combined_data <- merge(obs_soil_temp_p3, mod_conv_soil_temp, by = "date")
+
+# t5
+
+combined_data %>% 
+  #filter(year.x == "2018") %>%
+  ggplot(aes(x = date, y = X5cm))+
+  geom_line(size = 1, color = "gray")+
+  geom_line(aes(x = date, y = T_5_c), 
+            color = "#D55E00", size = 1, linetype = 3)+
+  theme_bw()+
+  ylab("Temperature at 5 cm (C)")
+
+# t25
+
+combined_data %>% 
+  #filter(year.x == "2018") %>%
+  ggplot(aes(x = date, y = temp_25))+
+  geom_line(size = 1, color = "gray")+
+  geom_line(aes(x = date, y = T_25_c), 
+            color = "#009E73", size = 1, linetype = 3)+
+  theme_bw()+
+  ylab("Temperature at 25 cm (C)")
+
+
+# t55
+
+combined_data %>% 
+  #filter(year.x == "2018") %>%
+  ggplot(aes(x = date, y = temp_55))+
+  geom_line(size = 1, color = "gray")+
+  geom_line(aes(x = date, y = T_55_c), 
+            color = "#009E73", size = 1, linetype = 3)+
+  theme_bw()+
+  ylab("Temperature at 25 cm (C)")
+
+
+# t85
+
+combined_data %>% 
+  #filter(year.x == "2018") %>%
+  ggplot(aes(x = date, y = temp_85))+
+  geom_line(size = 1, color = "gray")+
+  geom_line(aes(x = date, y = T_85_c), 
+            color = "#009E73", size = 1, linetype = 3)+
+  theme_bw()+
+  ylab("Temperature at 25 cm (C)")
+
+
+### statistics
+
+# temperature 5 cm
+observed <- combined_data$T_5_c
+modeled <- combined_data$X5cm
+calculate_metrics(observed, modeled)
+
+# temperature 25 cm
+observed <- combined_data$T_25_c
+modeled <- combined_data$temp_25
+calculate_metrics(observed, modeled)
 
 
 ###### SOIL WATER (WFPS) ###########
@@ -1763,7 +1915,6 @@ combined_data_swc_p3 %>%
     )
   )
 
-
 # wfps_25
 
 combined_data_swc_p3 %>% 
@@ -1788,6 +1939,46 @@ combined_data_swc_p3 %>%
     )
   )
 
+
+### statistics
+
+# wfps 5 cm
+
+# metrics_wfps5_df <- data.frame(
+#   PBIAS = numeric(0),
+#   NSE = numeric(0),
+#   RMSE = numeric(0),
+#   RRMSE_percent = numeric(0),
+#   Index_of_Agreement_d = numeric(0),
+#   R2 = numeric(0)
+# )
+
+observed <- filter(combined_data_swc_p3, Day > 90 & Day < 335)$wfps_5
+modeled <- filter(combined_data_swc_p3, Day > 90 & Day < 335)$X5cm*100
+metrics_wfps5 <- calculate_metrics(observed, modeled)
+
+metrics_wfps5_df <- rbind(metrics_wfps5_df, metrics_wfps5)
+metrics_wfps5_df
+
+# wfps 25 cm
+
+# metrics_wfps25_df <- data.frame(
+#   PBIAS = numeric(0),
+#   NSE = numeric(0),
+#   RMSE = numeric(0),
+#   RRMSE_percent = numeric(0),
+#   Index_of_Agreement_d = numeric(0),
+#   R2 = numeric(0)
+# )
+
+observed <- filter(combined_data_swc_p3, Day > 90 & Day < 335)$wfps_25
+modeled <- filter(combined_data_swc_p3, Day > 90 & Day < 335)$wfps_25_mod*100
+metrics_wfps25 <- calculate_metrics(observed, modeled)
+
+metrics_wfps25_df <- rbind(metrics_wfps25_df, metrics_wfps25)
+metrics_wfps25_df
+
+
 ###### SOIL NITROGEN ##############
 
 # import modeled data for p1
@@ -1804,18 +1995,24 @@ mod_conv_soil_n$date_jul <- mod_conv_soil_n$Day_
 mod_conv_soil_n <- mod_conv_soil_n %>%
   #filter(Year_ > 6) %>%
   mutate(year = case_when(
-    Year_ == 1 ~ 2012,
-    Year_ == 2 ~ 2013,
-    Year_ == 3 ~ 2014,
-    Year_ == 4 ~ 2015,
-    Year_ == 5 ~ 2016,
-    Year_ == 6 ~ 2017,
-    Year_ == 7 ~ 2018,
-    Year_ == 8 ~ 2019,
-    Year_ == 9 ~ 2020,
-    Year_ == 10 ~ 2021,
-    Year_ == 11 ~ 2022,
-    Year_ == 12 ~ 2023
+    Year_ == 1 ~ 2008,
+    Year_ == 2 ~ 2009,
+    Year_ == 3 ~ 2010,
+    Year_ == 4 ~ 2011,
+    Year_ == 5 ~ 2012,
+    Year_ == 6 ~ 2013,
+    Year_ == 7 ~ 2014,
+    Year_ == 8 ~ 2015,
+    Year_ == 9 ~ 2016,
+    Year_ == 10 ~ 2017,
+    Year_ == 11 ~ 2018,
+    Year_ == 12 ~ 2019,
+    Year_ == 13 ~ 2020,
+    Year_ == 14 ~ 2021,
+    Year_ == 15 ~ 2022,
+    Year_ == 16 ~ 2023,
+    Year_ == 17 ~ 2024,
+    
   ))
 
 mod_conv_soil_n$date <- as.Date(paste(mod_conv_soil_n$year, mod_conv_soil_n$date_jul), format = "%Y %j")
@@ -1826,25 +2023,43 @@ mod_conv_soil_n$no3_0_15 <- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO
 
 # plotting soil N for the entire period 2012-2023
 
-mod_conv_soil_n %>%
-  #filter(Year_ < 7) %>%
-  ggplot(aes(x = doy, y = no3_0_15))+
-  geom_line()+
-  geom_point(data = filter(obs_soil_n_p3_long, year>2011), aes(x=doy, y=no3_kg_n_ha), colour = "blue", alpha=0.5)+
-  facet_wrap(year~.)+
-  theme_bw()+
-  geom_vline(data = filter(fert_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
-  geom_point(data = filter(mgmt_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
+# mod_conv_soil_n %>%
+#   #filter(Year_ < 7) %>%
+#   ggplot(aes(x = doy, y = no3_0_15))+
+#   geom_line()+
+#   geom_point(data = filter(obs_soil_n_p3_long, year>2011), aes(x=doy, y=no3_kg_n_ha), colour = "blue", alpha=0.5)+
+#   facet_wrap(year~.)+
+#   theme_bw()+
+#   geom_vline(data = filter(fert_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
+#   geom_point(data = filter(mgmt_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
+# 
+# mod_conv_soil_n %>%
+#   #filter(Year_ < 7) %>%
+#   ggplot(aes(x = doy, y = nh4_0_15))+
+#   geom_line()+
+#   geom_point(data = filter(obs_soil_n_p3_long, year>2011), aes(x=doy, y=nh4_kg_n_ha), colour = "blue", alpha=0.5)+
+#   facet_wrap(year~.)+
+#   theme_bw()+
+#   geom_vline(data = filter(fert_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
+#   geom_point(data = filter(mgmt_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
 
 mod_conv_soil_n %>%
   #filter(Year_ < 7) %>%
-  ggplot(aes(x = doy, y = nh4_0_15))+
-  geom_line()+
-  geom_point(data = filter(obs_soil_n_p3_long, year>2011), aes(x=doy, y=nh4_kg_n_ha), colour = "blue", alpha=0.5)+
+  ggplot(aes(x = doy, y = no3_0_15))+
+  geom_line(colour = "#009E73", alphha = 0.75, size = 0.75)+
+  geom_point(data = filter(obs_soil_n_p1_long, year %in% c(2012:2014)), aes(x=doy, y=no3_kg_n_ha), colour = "#009E73", alpha=0.5)+
+  geom_point(data = filter(obs_soil_n_p3_long, year %in% c(2008:2023)), aes(x=doy, y=no3_kg_n_ha), colour = "#009E73", alpha=0.5)+
+  geom_point(data = filter(obs_soil_n_p3_long, year %in% c(2008:2023)), aes(x=doy, y=nh4_kg_n_ha), colour = "#D55E00", alpha=0.5)+
+  geom_line(data = mod_conv_soil_n, aes(x=doy, y=nh4_0_15), colour = "#D55E00", alpha=0.75, size = 0.75)+
+  
   facet_wrap(year~.)+
   theme_bw()+
-  geom_vline(data = filter(fert_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
-  geom_point(data = filter(mgmt_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
+  geom_vline(data = filter(fert_dates_p3, year %in% c(2012:2023)), aes(xintercept = doy), color = "darkred", linetype = "dashed", size = 1)+
+  #geom_vline(data = filter(fert_dates_p1, year %in% c(2008:2014)), aes(xintercept = doy), color = "#CC79A7", linetype = "dashed", size = 1)+
+  
+  geom_point(data = filter(mgmt_dates_p3, year %in% c(2008:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)+
+  ylab("Soil N (kg N/ha)")
+
 
 # plot other N losses as reported by dndc
 
@@ -1856,7 +2071,8 @@ mod_conv_soil_n %>%
     nh3 = sum(NH3.flux_),
     no3_l = sum(NO3.leach_),
     sum = n2o + n2 + nh3 + no3_l 
-  ) %>% 
+  ) %>%
+  #filter(year >2017) %>% 
   pivot_longer(
     cols = c(n2o, n2,  nh3, no3_l,  sum),
     names_to = "losses",
@@ -1965,13 +2181,13 @@ ggplot(mod_conv_soil_n, aes(x = doy , y = no3_0_15))+
 ### statistics
 
 # nh4
-combined_data <- merge(obs_soil_n_p1, mod_conv_soil_n, by = "date")
+combined_data <- merge(obs_soil_n_p3, mod_conv_soil_n, by = "date")
 observed <- combined_data$nh4_kg_n_ha
 modeled <- combined_data$nh4_0_15
 calculate_metrics(observed, modeled)
 
 # no3
-combined_data <- merge(obs_soil_n_p1, mod_conv_soil_n, by = "date")
+combined_data <- merge(obs_soil_n_p3, mod_conv_soil_n, by = "date")
 observed <- combined_data$no3_kg_n_ha
 modeled <- combined_data$no3_0_15
 calculate_metrics(observed, modeled)
@@ -2005,6 +2221,27 @@ mod_co2_p3 <- mod_co2_p3 %>%
 mod_co2_p3$date <- as.Date(paste(mod_co2_p3$year, mod_co2_p3$date_jul), format = "%Y %j")
 mod_co2_p3$doy <- mod_co2_p3$Day
 
+### statistics
+merged_data <- merge(mod_co2_p3, obs_co2_p3, by = "date", all = TRUE, suffixes = c("_mod", "_obs"))
+
+predicted <- merged_data$mod_gpp
+observed <- merged_data$obs_gpp
+
+metrics_gpp <- calculate_metrics(observed, predicted)
+
+metrics_gpp_df <- data.frame(
+  PBIAS = numeric(0),
+  NSE = numeric(0),
+  RMSE = numeric(0),
+  RRMSE_percent = numeric(0),
+  Index_of_Agreement_d = numeric(0),
+  R2 = numeric(0)
+)
+
+metrics_gpp_df <- rbind(metrics_gpp_df, metrics_gpp)
+metrics_gpp_df
+
+
 ## graphs 
 
 # gpp
@@ -2013,7 +2250,7 @@ mod_co2_p3 %>%
   filter(year < 2022) %>% 
   ggplot(aes(x = doy, y = mod_gpp))+
   geom_line(size = 1, color = "gray")+
-  geom_line(data = obs_co2_p3, aes(x = doy, y = obs_gpp), color = "#009E73", linetype = 1, size = 1, alpha = 0.3)+
+  geom_line(data = obs_co2_p3, aes(x = doy, y = obs_gpp), color = "#009E73", linetype = 1, size = 1, alpha = 0.4)+
   #geom_line(data = obs_co2_p1, aes(x = date, y = obs_gpp), color = "red", linetype = 1, size = 1, alpha = 0.5)+
   # scale_x_date(
   #   date_breaks = "10 days",          # Breaks every 10 days
@@ -2109,55 +2346,72 @@ mod_n2o_p3$date_jul <- mod_n2o_p3$Day
 mod_n2o_p3$n2o_flux_g_n_ha_d <- mod_n2o_p3$N2O.flux*1000
 
 mod_n2o_p3 <- mod_n2o_p3 %>%
-  filter(Year > 6) %>%
+  #filter(Year > 10) %>%
   mutate(year = case_when(
-    Year == 7 ~ 2018,
-    Year == 8 ~ 2019,
-    Year == 9 ~ 2020,
-    Year == 10 ~ 2021,
-    Year == 11 ~ 2022,
-    Year == 12 ~ 2023
+    Year == 1 ~ 2008,
+    Year == 2 ~ 2009,
+    Year == 3 ~ 2010,
+    Year == 4 ~ 2011,
+    Year == 5 ~ 2012,
+    Year == 6 ~ 2013,
+    Year == 7 ~ 2014,
+    Year == 8 ~ 2015,
+    Year == 9 ~ 2016,
+    Year == 10 ~ 2017,
+    
+    Year == 11 ~ 2018,
+    Year == 12 ~ 2019,
+    Year == 13 ~ 2020,
+    Year == 14 ~ 2021,
+    Year == 15 ~ 2022,
+    Year == 16 ~ 2023,
+    Year == 17 ~ 2024,
   ))
 
 mod_n2o_p3$date <- as.Date(paste(mod_n2o_p3$year, mod_n2o_p3$date_jul), format = "%Y %j")
 mod_n2o_p3$doy <- mod_n2o_p3$Day
 
+
+# loading other years of n2o data to compare
+
+n2o_new_plot1_2000_2014 <- read_excel("obs_data/measured_n2o/other_or_older/e-26_longtermN2O_March_2025_Nir.xlsx", sheet = "e26_2000-2014_N2O_plot1")
+n2o_new_plot3_2015_2017 <- read_excel("obs_data/measured_n2o/other_or_older/e-26_longtermN2O_March_2025_Nir.xlsx", sheet = "e26_2015-2023_N2O_plot3")
+
+n2o_new_plot1_2000_2014$doy = n2o_new_plot1_2000_2014$DOY
+n2o_new_plot1_2000_2014$year = n2o_new_plot1_2000_2014$Year
+n2o_new_plot3_2015_2017$doy = yday(n2o_new_plot3_2015_2017$Date) 
+n2o_new_plot3_2015_2017$year = n2o_new_plot3_2015_2017$Year
+
 # graphs 
 
-ggplot(data = mod_n2o_p3, aes(x = doy, y = n2o_flux_g_n_ha_d)) +
-  geom_line(size = 1, color = "gray") +
-  geom_line(data = obs_n2o_p3, aes(x = doy, y = N2O_.g_N.ha.d.), color = "#0072B2", size = 1, alpha = 0.5) +
-  # scale_x_date(
-  #   date_breaks = "10 days",          # Breaks every 10 days
-  #   date_labels = "%d/%m"          # Format as DD/MM
-  # ) +
-  facet_wrap(year ~ ., nrow = 3) +
+mod_n2o_p3 %>% 
+  filter(year %in%c(2018:2024)) %>% 
+  ggplot(aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_d)) +
+  geom_line(size = 1, color = "darkgray") +
+  geom_line(data = filter(obs_n2o_p3p4, year < 2025), aes(x = as.numeric(doy), y = n2o_flux_g_n_ha_day), color = "#0072B2", size = 1, alpha = 0.6) +
+  
+  #geom_line(data = filter(n2o_new_plot1_2000_2014, year %in% c(2010:2014)), aes(x = as.numeric(doy), y = as.numeric(`N2O_non gapfilled (g N2O_N ha-1 d-1)`)), color = "#0072B2", size = 1, alpha = 0.6) +
+  #geom_line(data = filter(n2o_new_plot3_2015_2017, year %in% c(2015:2017)), aes(x = as.numeric(doy), y = as.numeric(`N2O_non gapfilled (g N2O_N ha-1 d-1)`)), color = "#0072B2", size = 1, alpha = 0.6) +
+  facet_wrap(year ~ ., ncol = 2) +
   theme_bw()+
   theme(
     axis.text.x = element_text(angle = 90))+
   ylab("N2O emissions (g N/ha/day)")+
-  geom_vline(data = filter(fert_dates_p3, year %in% c(2018:2023)), aes(xintercept = doy), color = "red", linetype = "dashed", size = 0.75)+
-  geom_point(data = filter(mgmt_dates_p3, year %in% c(2018:2023)), aes(xintercept = doy, y = 500), color = "blue", size = 5, shape = 4)+
-  geom_point(data = combined_data_swc_p3, aes(x = doy, y = X5cm * 100*16), size = 1, color = "gray") +
-  geom_point(data = combined_data_swc_p3, aes(x = doy, y =wfps_5*16), size = 1, color = "#D55E00")+
-  # geom_line(data = filter(mod_conv_soil_n, year %in% c(2018:2023)), aes(x = doy, y = no3_0_15*20), color = "black")+
-  scale_y_continuous(
-    sec.axis = sec_axis(
-      trans = ~ ./16,  # No scaling needed, precipitation is already in cm
-      name = "WPFPS (%)",
-      breaks = seq(0, 100, 25)  # Set the secondary axis from 0 to 6 cm
-    )
-  )
+  geom_vline(data = filter(fert_dates_p3, year %in% c(2018:2023)), aes(xintercept = doy), color = "darkred", linetype = "dashed", size = 1)+
   
-
+  geom_point(data = filter(mgmt_dates_p3, year %in% c(2018:2023)), aes(xintercept = doy, y = 100), color = "blue", size = 4, shape = 4)
+  # geom_point(data = combined_data_water, aes(x = doy, y = X5cm * 100), size = 1, color = "blue", alpha = 0.5)+
+  # geom_point(data = combined_data_water, aes(x = doy, y = wfps_5), size = 1, color = "#D55E00", alpha = 0.5)
 
 
 # statistics 
-merged_data <- merge(mod_n2o_p3, obs_n2o_p3, by = "date", all = TRUE, suffixes = c("_mod", "_obs"))
+merged_data <- merge(mod_n2o_p3, obs_n2o_p3p4, by = c("year", "doy"), all = TRUE, suffixes = c("_mod", "_obs"))
 
 predicted <- merged_data$n2o_flux_g_n_ha_d
-observed <- merged_data$N2O_.g_N.ha.d.
+observed <- merged_data$n2o_flux_g_n_ha_day
 metrics <- calculate_metrics(observed, predicted)
+metrics
+
 
 #########################
 

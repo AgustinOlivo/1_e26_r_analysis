@@ -1563,7 +1563,9 @@ mod_conv_soil_n <- mod_conv_soil_n %>%
     Year_ == 31 ~ 2020,
     Year_ == 32 ~ 2021,
     Year_ == 33 ~ 2022,
-    Year_ == 34 ~ 2023
+    Year_ == 34 ~ 2023,
+    Year_ == 35 ~ 2024
+    
   ))
 
 
@@ -1574,11 +1576,11 @@ mod_conv_soil_n$doy <- mod_conv_soil_n$date_jul
 mod_conv_soil_n$nh4_0_15 <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
 mod_conv_soil_n$no3_0_15 <- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
 
-mod_conv_soil_n$no3_0_15  <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
-mod_conv_soil_n$nh4_0_15<- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
-
-mod_conv_soil_n$no3_15_30  <- mod_conv_soil_n$NH4._10.20cm/2 + mod_conv_soil_n$NH4._20.30cm
-mod_conv_soil_n$nh4_15_30<- mod_conv_soil_n$X.NO3._10.20cm/2 + mod_conv_soil_n$X.NO3._20.30cm
+# mod_conv_soil_n$no3_0_15  <- mod_conv_soil_n$NH4._0.10cm + mod_conv_soil_n$NH4._10.20cm/2
+# mod_conv_soil_n$nh4_0_15<- mod_conv_soil_n$X.NO3._0.10cm + mod_conv_soil_n$X.NO3._10.20cm/2
+# 
+# mod_conv_soil_n$no3_15_30  <- mod_conv_soil_n$NH4._10.20cm/2 + mod_conv_soil_n$NH4._20.30cm
+# mod_conv_soil_n$nh4_15_30<- mod_conv_soil_n$X.NO3._10.20cm/2 + mod_conv_soil_n$X.NO3._20.30cm
 
 # plotting soil N for the entire period 2012-2023
 
@@ -1874,3 +1876,34 @@ ggplot(annual_sums, aes(x = source, y = total_n2o, fill = source)) +
 
 
 ###################################
+
+
+mod_soc <- read_excel("C:/Users/aolivo/OneDrive - University of Guelph/Desktop/Modeled Daily SOC.xlsx")
+
+mod_soc %>%
+  pivot_longer(
+    cols = c(`SOC 0-15`, `SOC 15-30`, `SOC 30-45`, `SOC 45-60`),
+    names_to = "soil_depth",
+    values_to = "soc"
+  ) %>% 
+  ggplot(aes(x = Day, y = soc, fill = soil_depth, color = soil_depth))+
+  geom_line(linewidth = 1)+
+  facet_wrap(Year~., nrow=1)+
+  scale_color_manual(values = c("#009E73","#0072B2", "#D55E00","#CC79A7"))+
+  scale_x_continuous(breaks=seq(0, 190, 180))+
+  scale_y_continuous(limits=c(0, 50000), breaks=seq(0, 50000, 10000))+
+  theme_bw()+
+  theme(
+    axis.text.x = element_text(angle=90, vjust = 0.5),
+    strip.text = element_text(angle = 90),
+    panel.spacing = unit(0, "lines"),
+    legend.position = "bottom"
+  )+
+  ylab("SOC Stocks (kg C/ha)")+
+  xlab("Day of the year")+
+  labs(color = "Soil Layer")
+
+ggsave(filename = "soc_stocks.png", width = 7.5, height = 4, dpi = 300)
+
+c("#F0E442", "#D55E00","#CC79A7","#E69F00", "#0072B2", "#009E73","#56B4E9" , "#000000" ,"#999999")
+
