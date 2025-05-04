@@ -54,20 +54,32 @@ setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_pro
 
 # The workflow starts with importing the half-hourly data. 
 
-EddyData_2018_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2018_R.txt")
-EddyData_2018_p3 <- EddyData_2018_p3 %>% 
-  filter(DoY < 195) # bringing in the dataset from p3 for the first few months of research year 1, as that is not available from tower in p1
-EddyData_2018_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2018_R.txt")
-EddyData_2018_p1 <- EddyData_2018_p1 %>% 
-  filter(DoY > 194) 
-EddyData_2019_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2019_R.txt")
-EddyData_2020_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2020_R.txt")
-EddyData_2021_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2021_R.txt")
-EddyData_2022_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2022_R.txt")
-EddyData_2023_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2023_R.txt")
-EddyData_2024_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2024_R.txt")
+# older data I was using
 
-EddyData_p1 <- rbind(EddyData_2018_p3, EddyData_2018_p1, EddyData_2019_p1, EddyData_2020_p1, EddyData_2021_p1, EddyData_2022_p1, EddyData_2023_p1,EddyData_2024_p1) # merging all years in a single dataset
+# EddyData_2018_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2018_R.txt")
+# EddyData_2018_p3 <- EddyData_2018_p3 %>%
+#   filter(DoY < 195) # bringing in the dataset from p3 for the first few months of research year 1, as that is not available from tower in p1
+# EddyData_2018_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2018_R.txt")
+# EddyData_2018_p1 <- EddyData_2018_p1 %>%
+#   filter(DoY > 194)
+# EddyData_2019_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2019_R.txt")
+# EddyData_2020_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2020_R.txt")
+# EddyData_2021_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2021_R.txt")
+# EddyData_2022_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2022_R.txt")
+# EddyData_2023_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2023_R.txt")
+# EddyData_2024_p1 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P12_tower_2024_R.txt")
+
+# new data
+
+EddyData_2018_p1 <- fLoadTXTIntoDataframe("ec_18_p12") # this function assumes the columns have the name of the variables, and the first row has the units
+EddyData_2019_p1 <- fLoadTXTIntoDataframe("ec_19_p12")
+EddyData_2020_p1 <- fLoadTXTIntoDataframe("ec_20_p12")
+EddyData_2021_p1 <- fLoadTXTIntoDataframe("ec_21_p12")
+EddyData_2022_p1 <- fLoadTXTIntoDataframe("ec_22_p12")
+EddyData_2023_p1 <- fLoadTXTIntoDataframe("ec_23_p12")
+EddyData_2024_p1 <- fLoadTXTIntoDataframe("ec_24_p12")
+
+EddyData_p1 <- rbind(EddyData_2018_p1, EddyData_2019_p1, EddyData_2020_p1, EddyData_2021_p1, EddyData_2022_p1, EddyData_2023_p1,EddyData_2024_p1) # merging all years in a single dataset
 
 # co2 fluxes are in umolm-2s-1
 
@@ -99,10 +111,15 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
   c(277,2023), # harvest
   c(365,2023),
   c(1,2024),
-  c(121,2024)
+  c(143,2024), # planting
+  c(307,2024), # harvest: this harvest date is from 2021; it has to be replaced with the harvest date for 2024
+  c(365,2024)
+  
 )))
 
 ### plot 3-4 
+
+# old data I was using
 
 EddyData_2018_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2018_R.txt")
 EddyData_2019_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2019_R.txt")
@@ -111,6 +128,16 @@ EddyData_2021_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extracti
 EddyData_2022_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2022_R.txt")
 EddyData_2023_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2023_R.txt")
 EddyData_2024_p3 <- fLoadTXTIntoDataframe("obs_data\\measured_co2\\data_extraction\\shared_by_pat_ec\\P3_tower_2024_R.txt")
+
+# new data
+
+EddyData_2018_p3 <- fLoadTXTIntoDataframe("ec_18_p3") # this function assumes the columns have the name of the variables, and the first row has the units
+EddyData_2019_p3 <- fLoadTXTIntoDataframe("ec_19_p3")
+EddyData_2020_p3 <- fLoadTXTIntoDataframe("ec_20_p3")
+EddyData_2021_p3 <- fLoadTXTIntoDataframe("ec_21_p3")
+EddyData_2022_p3 <- fLoadTXTIntoDataframe("ec_22_p3")
+EddyData_2023_p3 <- fLoadTXTIntoDataframe("ec_23_p3")
+EddyData_2024_p3 <- fLoadTXTIntoDataframe("ec_24_p3")
 
 EddyData_p3 <- rbind(EddyData_2018_p3, EddyData_2019_p3, EddyData_2020_p3, EddyData_2021_p3, EddyData_2022_p3, EddyData_2023_p3,EddyData_2024_p3) # merging all years in a single dataset
 # co2 fluxes are in umolm-2s-1
@@ -140,7 +167,9 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
   c(1,2023), 
   c(221,2023), # harvest ww
   c(1,2024),
-  c(121,2024)
+  c(143,2024), # planting
+  c(307,2024), # harvest: this harvest date is from 2021; it has to be replaced with the harvest date for 2024
+  c(365,2024)
 )))
 
 #######################################################################
@@ -152,9 +181,9 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
 
 # key source of information: https://cran.r-project.org/web/packages/REddyProc/vignettes/DEGebExample.html
 
-# filtering out values outside of the range (mostly based on source 5 and conversations with Patrick)
+# filtering out values outside of the range (mostly based on source 5 listed above and conversations with Patrick)
 
-EddyData <- mutate(EddyData_p1, # this needs to be changed based on plot
+EddyData <- mutate(EddyData_p3, # this needs to be changed based on plot
           NEE_raw = NEE,
           NEE = ifelse(NEE < -100, NA, NEE), # added based on discussion with Patrick and Claudia.
           NEE = ifelse(NEE > 60, NA, NEE), # added based on discussion with Patrick and Claudia.
@@ -176,7 +205,8 @@ EddyDataWithPosix <- fConvertTimeToPosix(
   filterLongRuns("NEE")
 
 # initialize R5 reference class sEddyProc for post-processing of eddy data - change the name of the plot after "("
-EProc <- sEddyProc$new('P1', EddyDataWithPosix, c('NEE','LE','H','Ustar','Tair','RH','VPD', 'Rg')) # this command creates an object of class "sEddyProc" with the data from EddyDataWithPosix, and verifies if there are any values outside of pre-defined ranges (via warning message; for NEE it uses values that are less than -50, and for VPD negative values)
+EProc <- sEddyProc$new('P1', EddyDataWithPosix, c('NEE','LE','H','Ustar','Tair','RH','VPD', 'Rg')) # this command creates an object of class "sEddyProc" with the data from EddyDataWithPosix, and verifies if there are any values outside of pre-defined ranges (via warning message; for NEE it uses values that are less than -50, and for VPD negative values); it is important to pay attention to these warnings, as they may signal issues with units, or the order of the observations in the dataset. 
+# for nee it may show warnings for values with absolute number larger than 50, but we set it at 100 so we do not need to worry about that warning specifically.
 
 #### additional data quality check steps ####
 
@@ -186,45 +216,107 @@ str(EProc$sDATA)
 # statistical summary of the data
 round(describe(EProc$sDATA[,-1]), 2)
 
-# plots across multiple years and variables to check the units are consistent
+EddyData_old <- EddyData
 
-EddyData_initial_explo <- EddyData %>% 
+# plots across multiple years and variables to check the units are consistent
+EddyData_initial_explo <- EddyData %>% # converting data to long format (needed for plotting)
   pivot_longer(
-    cols = c(LE, H, Ustar,Tair, RH, VPD, Rg),
+    cols = c(LE, H, Ustar,Tair, RH, VPD, Rg, NEE),
     names_to = "variables",
     values_to = "values"
   )
+summary_stats <- EddyData_initial_explo %>%
+  group_by(variables, Year) %>%
+  summarize(
+    mean_val = mean(values, na.rm = TRUE),
+    sd_val = sd(values, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-EddyData_initial_explo %>% 
-  ggplot(aes(x = DoY, y = values, colour = variables))+
-  geom_point(alpha = 0.5)+
-  facet_grid(vars(variables), vars(Year), scales = "free_y")+
-  theme_bw()+
-  theme(
-    legend.position = "none"
-  )+
-  geom_vline(xintercept = 121, color="red", linetype = "dashed")
+mgmt_dates_p3  <- seasonStarts # bringing in the management dates to plot them as vertical lines in the graph
+colnames(mgmt_dates_p3) <- c("doy", "Year")
 
-ggsave("basic.png", plot = last_plot(), width = 12, height = 7)
+EddyData_initial_explo %>% # actual plot using ggplot
+  ggplot(aes(x = DoY, y = values, colour = variables)) +
+  geom_point(alpha = 0.5, size = 1) +
+  facet_grid(vars(variables), vars(Year), scales = "free_y") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  #geom_vline(data = mgmt_dates_p1, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  geom_text(data = summary_stats,
+            aes(x = Inf, y = Inf,
+                label = paste0("Mean: ", round(mean_val, 1), "\nSD: ", round(sd_val, 1))),
+            hjust = 1.1, vjust = 1.0,
+            inherit.aes = FALSE,
+            size = 3)+
+  labs(
+    title = "REddyProc input data E26 - Plot3 (Half-hourly data)",
+    subtitle = "Units: NEE (umolm-2s-1), LE (Wm-2), H (Wm-2), Ustar (ms-1), Tair (degC), RH (%), VPD (hPa), Rg (Wm-2)"
+)
 
-# plor for nee only
+ggsave("basic_p3.png", plot = last_plot(), width = 12, height = 9.5) # saving the figure as png to the working directory
+
+
+# plot for nee only (halfhourly)
+
+# EddyData_initial_explo_nee_old <- EddyData_old %>% 
+#   pivot_longer(
+#     cols = c(NEE), #NEE_raw could be added
+#     names_to = "variables",
+#     values_to = "values"
+#   )
 
 EddyData_initial_explo_nee <-EddyData %>% 
   pivot_longer(
-    cols = c(NEE, NEE_raw),
+    cols = c(NEE), #NEE_raw could be added
     names_to = "variables",
     values_to = "values"
   )
 
 EddyData_initial_explo_nee %>% 
   ggplot(aes(x = DoY, y = values, fill = variables))+
-  geom_point(alpha = 0.5, aes(color = variables))+
+  #geom_point(data = EddyData_initial_explo_nee_old ,aes(x = DoY, y = values ), color = "#D55E00", alpha = 0.3, size = 0.75)+
+  geom_point(alpha = 0.3, color = "#009E73",  size = 0.75)+
   facet_grid(vars(variables), vars(Year), scales = "free_y")+
   theme_bw()+
   theme(
     legend.position = "none"
   )+
-  geom_vline(xintercept = 121, color = "red", linetype = "dashed")
+  geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  labs(title = "REddyProc input data E26 - Plot3 -  NEE (Half-hourly)",
+       subtitle = "Red lines represent beginning and end of year, plus planting and harvest")+
+  ylab("NEE (umolm-2s-1)")
+
+ggsave("basic_nee_halfhourly_p3_comparison.png", plot = last_plot(), width = 12, height = 5) # saving the figure as png to the working directory
+
+# plot for nee only (daily)
+
+EddyData_initial_explo_nee_daily <- EddyData %>%
+  group_by(DoY, Year) %>% 
+  summarise(
+    NEE = mean(NEE, na.rm = TRUE)
+  ) %>% 
+  pivot_longer(
+    cols = c(NEE), #NEE_raw could be added
+    names_to = "variables",
+    values_to = "values"
+  )
+
+EddyData_initial_explo_nee_daily %>% 
+  ggplot(aes(x = DoY, y = values))+
+  geom_point(alpha = 0.5,color = "#0072B2",  size = 1.5)+
+  facet_grid(vars(variables), vars(Year), scales = "free_y")+
+  theme_bw()+
+  theme(
+    legend.position = "none"
+  )+
+  geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  labs(title = "REddyProc input data E26 - Plot3 -  NEE (daily)",
+       subtitle = "Red lines represent beginning and end of year, plus planting and harvest")+
+  ylab("NEE (umolm-2s-1)")
+
+ggsave("basic_nee_daily_p3.png", plot = last_plot(), width = 12, height = 4) # saving the figure as png to the working directory
+
 
 # fingerprint plot: a fingerprint-plot is a color-coded image of the half-hourly fluxes by daytime on the x and and day of the year on the y axis.This may show several gaps
 
