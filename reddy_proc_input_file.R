@@ -20,6 +20,7 @@ library(ggplot2)
 library(psych)
 library(openair)
 library(lubridate)
+library(tidyr)
 
 ###################################
 
@@ -792,7 +793,6 @@ flux_grad_p1p2_2018_to_merge <- flux_grad_p1p2_2018_2024 %>% # bringing the flux
          source_fg = "fg") %>% 
   select(!Year)
 
-str(ec_18_p12_in)
 combined_ec_fg_full_data_p1_2018 <- ec_18_p12_in %>% # merging all the datasets, and replacing the values only for the dates where the gaps exist
   left_join(
     flux_grad_p1p2_2018_to_merge, 
@@ -800,9 +800,9 @@ combined_ec_fg_full_data_p1_2018 <- ec_18_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = coalesce(NEE, CO2_flux_umol),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = coalesce(NEE, CO2_flux_umol)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -838,9 +838,9 @@ combined_ec_fg_full_data_p1_2019 <- ec_19_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = coalesce(CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H),
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = coalesce(CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -873,9 +873,9 @@ combined_ec_fg_full_data_p1_2020 <- ec_20_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -908,9 +908,9 @@ combined_ec_fg_full_data_p1_2021 <- ec_21_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -943,9 +943,9 @@ combined_ec_fg_full_data_p1_2022 <- ec_22_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -958,6 +958,11 @@ sum(!is.na(combined_ec_fg_full_data_p1_2022$NEE))
 
 ec_23_p12_in <- read.table("ec_23_p12", header = TRUE) # this is the original file with EC data I had created
 ec_23_p12_in <- ec_23_p12_in %>%
+  mutate(across(
+    .cols = c(NEE),                 # all columns EXCEPT these
+    .fns = ~ ifelse(DoY >= 273, NA, .),          # set to NA if DoY >= 273
+    .names = "{.col}"                            # keep original names
+  )) %>% # filtering out all the data before the change from CSAT to IRGASON, which we confirmed had some errors after changing. I need to discard all EC data from october 2023 to April 2024.
   mutate(Date = as.numeric(DoY) + (as.numeric(Hour) / 24)) %>% 
   mutate(Date = round(Date, digits=2),
          source_ec = "ec",
@@ -978,9 +983,9 @@ combined_ec_fg_full_data_p1_2023 <- ec_23_p12_in %>% # merging all the datasets,
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -991,12 +996,14 @@ sum(!is.na(combined_ec_fg_full_data_p1_2023$NEE))
 
 # 2024
 
-ec_24_p12_in <- read.table("ec_24_p12", header = TRUE) # this is the original file with EC data I had created
-ec_24_p12_in <- ec_24_p12_in %>%
-  mutate(Date = as.numeric(DoY) + (as.numeric(Hour) / 24)) %>% 
-  mutate(Date = round(Date, digits=2),
-         source_ec = "ec",
-         NEE = as.numeric(NEE))
+# we are discarding all data from P12 irgason (installed in october 2023) up to the end of the experiment
+
+# ec_24_p12_in <- read.table("ec_24_p12", header = TRUE) # this is the original file with EC data I had created
+# ec_24_p12_in <- ec_24_p12_in %>%
+#   mutate(Date = as.numeric(DoY) + (as.numeric(Hour) / 24)) %>%
+#   mutate(Date = round(Date, digits=2),
+#          source_ec = "ec",
+#          NEE = as.numeric(NEE))
 
 flux_grad_p1p2_2024_to_merge <- flux_grad_p1p2_2018_2024 %>% # bringing the flux gradient data, and filtering for the specific days to gapfill
   select(Year, Date, CO2_flux_umol, ` u*`, ` H`) %>% 
@@ -1006,17 +1013,30 @@ flux_grad_p1p2_2024_to_merge <- flux_grad_p1p2_2018_2024 %>% # bringing the flux
          source_fg = "fg") %>% 
   select(!Year)
 
+# combined_ec_fg_full_data_p1_2024 <- ec_24_p12_in %>% # merging all the datasets, and replacing the values only for the dates where the gaps exist
+#   left_join(
+#     flux_grad_p1p2_2024_to_merge, 
+#     by = c("Date")
+#   ) %>% 
+#   mutate(
+#     source = ifelse(is.na(NEE), source_fg, source_ec),
+#     Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+#     H = ifelse(is.na(NEE),` H`, H),
+#     NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
+# 
+#   ) %>%
+#   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
+
 combined_ec_fg_full_data_p1_2024 <- ec_24_p12_in %>% # merging all the datasets, and replacing the values only for the dates where the gaps exist
   left_join(
     flux_grad_p1p2_2024_to_merge, 
     by = c("Date")
   ) %>% 
   mutate(
-    source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
-  ) %>%
+    source = source_fg,
+    Ustar = ` u*`,
+    H = ` H`,
+    NEE = CO2_flux_umol) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
 write.table(combined_ec_fg_full_data_p1_2024, file = "combined_ec_fg_full_data_allyear_p1_2024", sep = "\t", row.names = FALSE, quote = FALSE) 
@@ -1360,6 +1380,11 @@ obs_temp_2020 <- obs_temp_2020 %>%
 sum(is.na(obs_temp_2020$Tair))
 sum(!is.na(obs_temp_2020$Tair))
 
+tair_p3_2020<- obs_temp_2020 %>% 
+  select(Tair)
+sum(!is.na(tair_p3_2020$Tair))
+sum(is.na(tair_p3_2020$Tair))
+
 # Replace NA or NaN in tair_p3_2020 with values from obs_temp_2020
 tair_p3_2020$Tair[is.na(tair_p3_2020$Tair) | is.nan(tair_p3_2020$Tair)] <- 
   obs_temp_2020$Tair[is.na(tair_p3_2020$Tair) | is.nan(tair_p3_2020$Tair)]
@@ -1410,6 +1435,7 @@ rg_2020 %>%
 ec_20_p3 <- bind_cols(time_df_2020,co2_p3_2020,le_p3_2020,h_p3_2020,ustar_p3_2020,tair_p3_2020,rh_p3_2020,vpd_p3_2020) %>%
   left_join(rg_2020, by = c("DoY", "Hour"))
 ec_20_p3 <- rbind(units_row, ec_20_p3)
+sum(is.na(as.numeric(ec_20_p3$Tair)))
 
 write.table(ec_20_p3, file = "ec_20_p3", sep = "\t", row.names = FALSE, quote = FALSE)
 
@@ -1480,6 +1506,11 @@ obs_temp_2021 <- obs_temp_2021 %>%
   select(!Air_temp_avg)
 sum(is.na(obs_temp_2021$Tair))
 sum(!is.na(obs_temp_2021$Tair))
+
+tair_p3_2021 <-obs_temp_2021 %>% 
+  select(Tair)
+
+sum(is.na(as.numeric(tair_p3_2021$Tair)))
 
 # Replace NA or NaN in tair_p3_2021 with values from obs_temp_2021
 tair_p3_2021$Tair[is.na(tair_p3_2021$Tair) | is.nan(tair_p3_2021$Tair)] <- 
@@ -1913,9 +1944,9 @@ combined_ec_fg_full_data_p3_2018 <- ec_18_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -1945,9 +1976,9 @@ combined_ec_fg_full_data_p3_2019 <- ec_19_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -1961,6 +1992,8 @@ ec_20_p3_in <- ec_20_p3_in %>%
   mutate(Date = round(Date, digits=2),
          source_ec = "ec",
          NEE = as.numeric(NEE))
+
+sum(is.na(as.numeric(ec_20_p3_in$Tair)))
 
 flux_grad_p3_2020_to_merge <- flux_grad_p3p4_2018_2024 %>% # bringing the flux gradient data, and filtering for the specific days to gapfill
   select(Year, Date, CO2_flux_umol, ` u*`, ` H`) %>% 
@@ -1977,13 +2010,16 @@ combined_ec_fg_full_data_p3_2020 <- ec_20_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
-  select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg)
+  select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
 write.table(combined_ec_fg_full_data_p3_2020, file = "combined_ec_fg_full_data_allyear_p3_2020", sep = "\t", row.names = FALSE, quote = FALSE) 
+
+sum(is.na(as.numeric(combined_ec_fg_full_data_p3_2020$Tair)))
+
 # 2021
 
 ec_21_p3_in <- read.table("ec_21_p3", header = TRUE) # this is the original file with EC data I had created
@@ -2008,9 +2044,9 @@ combined_ec_fg_full_data_p3_2021 <- ec_21_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -2040,9 +2076,9 @@ combined_ec_fg_full_data_p3_2022 <- ec_22_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -2072,9 +2108,9 @@ combined_ec_fg_full_data_p3_2023 <- ec_23_p3_in %>% # merging all the datasets, 
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
@@ -2099,20 +2135,54 @@ flux_grad_p3_2024_to_merge <- flux_grad_p3p4_2018_2024 %>% # bringing the flux g
 
 combined_ec_fg_full_data_p3_2024 <- ec_24_p3_in %>% # merging all the datasets, and replacing the values only for the dates where the gaps exist
   left_join(
-    flux_grad_p1p2_2024_to_merge, 
+    flux_grad_p3_2024_to_merge, 
     by = c("Date")
   ) %>% 
   mutate(
     source = ifelse(is.na(NEE), source_fg, source_ec),
-    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE),
-    Ustar = ifelse(is.na(Ustar), ` u*`, Ustar),
-    H = ifelse(is.na(H),` H`, H)
+    Ustar = ifelse(is.na(NEE), ` u*`, Ustar),
+    H = ifelse(is.na(NEE),` H`, H),
+    NEE = ifelse(is.na(NEE), CO2_flux_umol, NEE)
   ) %>%
   select(Year, DoY, Hour, NEE, LE, H, Ustar, Tair, RH, VPD, Rg, source)
 
 write.table(combined_ec_fg_full_data_p3_2024, file = "combined_ec_fg_full_data_allyear_p3_2024", sep = "\t", row.names = FALSE, quote = FALSE) 
 
 ########################################################
+
+################# data comparison #####################
+
+# comparing air temperature with soil temperature
+
+obs_soil_temp <- read_excel("obs_data/measured_soil_temp/temp_2018_2024.xlsx")
+obs_soil_temp_p12 <- obs_soil_temp %>% 
+  filter(group ==  "P1_P2")
+obs_soil_temp_p34 <- obs_soil_temp %>% 
+  filter(group ==  "P3_P4")
+
+
+str(combined_ec_fg_full_data_p1_2020)
+air_temp<- EddyData_p1 %>% 
+  select(Year, DoY, Hour, Tair) %>%
+  mutate(Tair = as.numeric(Tair)) %>% 
+  group_by(DoY, Year) %>% 
+  summarise(
+    tair = mean(Tair, na.rm = TRUE)
+  ) %>% 
+  mutate(doy = as.numeric(DoY),
+         year = Year)
+str(air_temp)
+
+obs_soil_temp_p34%>% 
+  left_join(air_temp, by = c("doy", "year")) %>% 
+  select(year, doy,temp_5_mean, tair) %>% 
+  filter(year==2024) %>%
+  ggplot()+
+  geom_line(aes(x=doy, y=tair), color = "blue")+
+  geom_line(aes(x=doy, y=temp_5_mean ), color = "darkgreen")+
+  theme_bw()+
+  facet_wrap(year~., ncol=2)
+
 
 #################################
 ############# old ###############

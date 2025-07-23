@@ -64,7 +64,7 @@ setwd("C:/Users/aolivo/OneDrive - University of Guelph/0_all_files_postdoc/1_pro
 
 ########### loading the actual files
 
-### plot 1-2 
+##### plot 1-2 #####
 
 # The workflow starts with importing the half-hourly data. 
 
@@ -152,7 +152,7 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
   
 )))
 
-### plot 3-4 
+##### plot 3-4 ####
 
 # The workflow starts with importing the half-hourly data. 
 
@@ -251,7 +251,7 @@ EddyData <- mutate(EddyData_p1, # this needs to be changed based on plot
           RH = ifelse(abs(RH) > 100, NA, RH), # I added this after realizing there were a few observations with values among 3000s and 6000s
           H = ifelse(H > 500 | H < -100, NA, H), # I noticed in 2024 there were a few H and LE values, so looking at the rest of the distribution I set these thresholds
           LE = ifelse(LE < -500, NA, LE), # I noticed in 2024 there were a few H and LE values, so looking at the rest of the distribution I set these thresholds
-          source = source        
+          #source = source        
           )
 
 # Replace long runs of equal NEE values by NA
@@ -291,17 +291,19 @@ summary_stats <- EddyData_initial_explo %>%
     .groups = "drop"
   )
 
-mgmt_dates_p3  <- seasonStarts # bringing in the management dates to plot them as vertical lines in the graph
-colnames(mgmt_dates_p3) <- c("doy", "Year")
+mgmt_dates  <- seasonStarts # bringing in the management dates to plot them as vertical lines in the graph
+colnames(mgmt_dates) <- c("doy", "Year")
 
 EddyData_initial_explo %>% # actual plot using ggplot
-  #filter(variables == "Rg") %>% 
+  #filter(Year %in% 2023:2024) %>% 
+  #filter(variables == "NEE") %>% 
   ggplot(aes(x = DoY, y = values, colour = variables)) +
   geom_point(alpha = 0.5, size = 1) +
   facet_grid(vars(variables), vars(Year), scales = "free_y") +
+  #facet_wrap(Year~., ncol = 2)+
   theme_bw() +
   theme(legend.position = "none") +
-  #geom_vline(data = mgmt_dates_p1, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  geom_vline(data = mgmt_dates, aes(xintercept =doy) , color = "red", linetype = "dashed") +
   geom_text(data = summary_stats,
             aes(x = Inf, y = Inf,
                 label = paste0("Mean: ", round(mean_val, 1), "\nSD: ", round(sd_val, 1))),
@@ -335,7 +337,7 @@ EddyData %>%
   theme(
     legend.position = "bottom"
   )+
-  geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  #geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
   labs(title = "REddyProc input data E26 - Plot 3 -  NEE (Half-hourly)",
        subtitle = "Red lines represent beginning and end of year, plus planting and harvest")+
   ylab("NEE (umolm-2s-1)")
@@ -385,7 +387,7 @@ EProc$sPlotHHFluxesY('NEE', Year = 2019)
 # seasons were defined for each plot in previous steps
 
 seasonFactor <- usCreateSeasonFactorYdayYear(
-  EddyDataWithPosix$DateTime, starts = seasonStarts) # in Daphnee's code there is no "-15*60; technically this is a strategy to avoid confusion with dates. Since data for each date is recorded from hour 0.5 to hour 24, hour 24 is technically the hour 00:00 of the next day. To avoid this confusio, authors in youtube video listed in references suggest shiftting the time stamp for 15 minutes.
+  EddyDataWithPosix$DateTime-15*60, starts = seasonStarts) # in Daphnee's code there is no "-15*60; technically this is a strategy to avoid confusion with dates. Since data for each date is recorded from hour 0.5 to hour 24, hour 24 is technically the hour 00:00 of the next day. To avoid this confusio, authors in youtube video listed in references suggest shiftting the time stamp for 15 minutes.
 seasonStartsDate <- fConvertTimeToPosix( data.frame(Year = seasonStarts[,2]
                                                     , DoY = seasonStarts[,1], Hour = 0.50), 'YDH'
                                          , Year = "Year", Day = "DoY", Hour = "Hour")
@@ -469,12 +471,16 @@ CombinedData <- CombinedData %>%
   )
 
 
-CombinedData_p12_ec_fg_2025_05_28 
-CombinedData_p34_ec_fg_2025_05_28 
+CombinedData_p12_ec_fg 
+CombinedData_p34_ec_fg <- CombinedData
 
 # exporting datasets
 
-CombinedData_p12_ec_fg_2025_05_28 %>%
+conv_factor <- 12.011 / 1e6 * 1800
+
+#p12 
+
+CombinedData_p12_ec_fg %>%
   mutate(
     NEE_gC = NEE_U50_f * conv_factor,
     
@@ -494,10 +500,11 @@ CombinedData_p12_ec_fg_2025_05_28 %>%
     reco_dt_g_c_m2_day = sum(Reco_DT_U50_gC, na.rm = TRUE),
     .groups = "drop"
   ) %>%
-  write_xlsx(path = "obs_co2_p12_2025_05_28.xlsx")
+  write_xlsx(path = "obs_co2_p12.xlsx")
 
+#p34
 
-CombinedData_p34_ec_fg_2025_05_28 %>%
+CombinedData_p34_ec_fg %>%
   mutate(
     NEE_gC = NEE_U50_f * conv_factor,
     
@@ -518,8 +525,7 @@ CombinedData_p34_ec_fg_2025_05_28 %>%
     reco_dt_g_c_m2_day = sum(Reco_DT_U50_gC, na.rm = TRUE),
     .groups = "drop"
   ) %>%
-  write_xlsx(path = "obs_co2_p34_2025_05_28.xlsx")
-
+  write_xlsx(path = "obs_co2_p34.xlsx")
 
 # important variables in the CombineData dataset
 
@@ -621,8 +627,8 @@ year_of_interest <- "23/24" # added by agustin
 
 results <- CombinedData %>%
   mutate(
-    DateTime = EddyDataWithPosix$DateTime     # take time stamp form input data
-    , DoY = as.POSIXlt(DateTime - 15*60)$yday # midnight belongs to the previous
+    DateTime = EddyDataWithPosix$DateTime     
+    #, DoY = as.POSIXlt(DateTime - 15*60)$yday # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
   ) %>% 
   filter(crop_year == year_of_interest) %>%  
   mutate(
@@ -700,63 +706,458 @@ aggDay <- results %>%
     .groups = "drop_last"
   )
 
-aggDay %>%
-  ggplot(aes(x = DoY)) +
-  geom_ribbon(aes(ymin = NEE - sdNEE, ymax = NEE + sdNEE), fill = "skyblue", alpha = 0.75) +
-  geom_line(aes(y = NEE), color = "blue", size = 1) +
-  labs(
-    title = "Daily NEE with Uncertainty - 21/22",
-    x = "Date",
-    y = expression(NEE~(µmol~CO[2]~m^{-2}~s^{-1}))
-  ) +
-  facet_wrap(Year~., nrow=2)+
-  theme_bw()
-
-# g C
-aggDay$nee_g_c_m2_day <- aggDay$NEE*1.0368
-aggDay$sd_nee_g_c_m2_day <- aggDay$sdNEE*1.0368
-
-#mean_sd_daily_gC_all <- data.frame()
-
-# summary all years
-mean_sd_daily_gC_all <- rbind(mean_sd_daily_gC_all, aggDay)
-mean_sd_daily_gC_all
-
-# export
-# mean_sd_daily_gC_all %>% 
-#   write_xlsx(path = "mean_sd_daily_gC_all_conv.xlsx")
-
-# export
-# mean_sd_daily_gC_all %>%
-#   write_xlsx(path = "mean_sd_daily_gC_all_div.xlsx")
-
-# aggDay_gpp <- results %>%
-#   group_by(DoY) %>%
-#   summarise(
-#     DateTime = first(DateTime),
-#     nEff = lognorm::computeEffectiveNumObs(
-#       resid, effAcf = !!autoCorr, na.rm = TRUE),
-#     nRec = sum(is.finite(GPP_DT_U50_SD)),
-#     NEE = mean(GPP_DT_U50, na.rm = TRUE),
-#     sdNEE = if (nEff <= 1) NA_real_ else sqrt(
-#       mean(GPP_DT_U50_SD^2, na.rm = TRUE) / (nEff - 1)),
-#     sdNEEuncorr = if (nRec <= 1) NA_real_ else sqrt(
-#       mean(GPP_DT_U50_SD^2, na.rm = TRUE) / (nRec - 1)),
-#     .groups = "drop_last"
-#   )
-# 
-# aggDay_gpp %>%
+# aggDay %>%
 #   ggplot(aes(x = DoY)) +
 #   geom_ribbon(aes(ymin = NEE - sdNEE, ymax = NEE + sdNEE), fill = "skyblue", alpha = 0.75) +
 #   geom_line(aes(y = NEE), color = "blue", size = 1) +
 #   labs(
-#     title = "Daily NEE with Uncertainty - 18/19",
+#     title = "Daily NEE with Uncertainty - 21/22",
 #     x = "Date",
 #     y = expression(NEE~(µmol~CO[2]~m^{-2}~s^{-1}))
 #   ) +
+#   facet_wrap(Year~., nrow=2)+
 #   theme_bw()
+# 
+# # g C
+# aggDay$nee_g_c_m2_day <- aggDay$NEE*1.0368
+# aggDay$sd_nee_g_c_m2_day <- aggDay$sdNEE*1.0368
+# 
+# #mean_sd_daily_gC_all <- data.frame()
+# 
+# # summary all years
+# mean_sd_daily_gC_all <- rbind(mean_sd_daily_gC_all, aggDay)
+# mean_sd_daily_gC_all
 
-# u* threshold uncertainty
+# estimate u* treshold uncertainty for daily NEE means
+
+computeDailyMeanNEE <- function(ds, suffix){
+  column_name <- paste0("NEE_", suffix, "_f")
+  ds %>%
+    group_by(DoY) %>%
+    summarise(daily_mean = mean(.data[[column_name]], na.rm = TRUE)) %>%
+    ungroup()
+}
+
+FilledEddyData <- CombinedData %>%
+  mutate(
+    DateTime = EddyDataWithPosix$DateTime     
+    #, DoY = as.POSIXlt(DateTime - 15*60)$yday # this was causing an issue with doy's so I decided to comment it out.
+  ) %>% 
+  filter(crop_year == year_of_interest) 
+
+daily_means_list <- EProc$sApplyUStarScen(computeDailyMeanNEE, FilledEddyData)
+
+# Add a name for each scenario (from names of the list)
+names(daily_means_list) <- names(daily_means_list)
+# Convert to wide format with DoY as common column
+daily_wide <- reduce(daily_means_list, full_join, by = "DoY")
+colnames(daily_wide) <- c("DoY", paste0("NEE_", names(daily_means_list)))
+
+daily_summary <- daily_wide %>%
+  rowwise() %>%
+  mutate(
+    NEE_mean = mean(c_across(starts_with("NEE_")), na.rm = TRUE),
+    NEE_sd = sd(c_across(starts_with("NEE_")), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# combine u* treshold uncertainty and random uncertainty
+
+# Join the two tables by DoY
+daily_uncertainty <- aggDay %>%
+  select(Year, DoY, DateTime, NEE, sdNEE) %>%
+  left_join(daily_summary %>% select(DoY, sdUstar = NEE_sd), by = "DoY")
+
+# Combine uncertainties
+daily_uncertainty <- daily_uncertainty %>%
+  mutate(
+    sdComb = sqrt(sdNEE^2 + sdUstar^2)
+  )
+
+# Convert to g C m-2 day-1
+daily_uncertainty <- daily_uncertainty %>%
+  mutate(
+    nee_g_c_m2_day = NEE * 1.0368,
+    sd_rand_g_c = sdNEE * 1.0368,
+    sd_ustar_g_c = sdUstar * 1.0368,
+    sd_comb_g_c = sdComb * 1.0368
+  )
+
+# store data
+
+#mean_sd_daily_gC_all_nee <- data.frame()
+
+# summary all years
+mean_sd_daily_gC_all_nee <- rbind(mean_sd_daily_gC_all_nee, daily_uncertainty)
+mean_sd_daily_gC_all_nee
+
+# export
+# mean_sd_daily_gC_all_nee %>%
+#    write_xlsx(path = "mean_sd_daily_gC_all_nee_conv.xlsx")
+
+# export
+# mean_sd_daily_gC_all_nee %>%
+#    write_xlsx(path = "mean_sd_daily_gC_all_nee_div.xlsx")
+
+# plot daily means with uncertainties
+
+# uncertainty combined
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = nee_g_c_m2_day  - sd_comb_g_c, ymax = nee_g_c_m2_day  + sd_comb_g_c), fill = "skyblue", alpha = 0.75) +
+  geom_line(aes(y = nee_g_c_m2_day), color = "blue", size = 1) +
+  labs(
+    title = "Daily NEE with random and u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# random uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = nee_g_c_m2_day  - sd_rand_g_c , ymax = nee_g_c_m2_day  + sd_rand_g_c ), fill = "pink", alpha = 0.75) +
+  geom_line(aes(y = nee_g_c_m2_day), color = "red", size = 1) +
+  labs(
+    title = "Daily NEE with random and u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# u* uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = nee_g_c_m2_day  - sd_ustar_g_c  , ymax = nee_g_c_m2_day  + sd_ustar_g_c  ), fill = "lightgreen", alpha = 0.75) +
+  geom_line(aes(y = nee_g_c_m2_day), color = "darkgreen", size = 1) +
+  labs(
+    title = "Daily NEE with random and u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# estimate u* treshold uncertainty for daily GPP means with nighttime partitioning
+
+computeDailyMeanGPP <- function(ds, suffix){
+  column_name <- paste0("GPP_", suffix, "_f")
+  ds %>%
+    #mutate(DoY = as.POSIXlt(DateTime - 15*60)$yday) %>% # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+    group_by(DoY) %>%
+    summarise(daily_mean = mean(.data[[column_name]], na.rm = TRUE)) %>%
+    ungroup()
+}
+
+FilledEddyData <- CombinedData %>%
+  mutate(
+    DateTime = EddyDataWithPosix$DateTime     # take time stamp form input data
+   # , DoY = as.POSIXlt(DateTime - 15*60)$yday # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+    
+  ) %>% 
+  filter(crop_year == year_of_interest) 
+
+daily_means_list <- EProc$sApplyUStarScen(computeDailyMeanGPP, FilledEddyData)
+
+# Add a name for each scenario (from names of the list)
+names(daily_means_list) <- names(daily_means_list)
+# Convert to wide format with DoY as common column
+daily_wide <- reduce(daily_means_list, full_join, by = "DoY")
+colnames(daily_wide) <- c("DoY", paste0("GPP_", names(daily_means_list)))
+
+daily_summary <- daily_wide %>%
+  rowwise() %>%
+  mutate(
+    GPP_mean = mean(c_across(starts_with("GPP_")), na.rm = TRUE),
+    GPP_sd = sd(c_across(starts_with("GPP_")), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Convert to g C m-2 day-1
+daily_uncertainty <- daily_summary %>%
+  mutate(
+    gpp_mean_g_c_m2_day_nt = GPP_mean  * 1.0368,
+    gpp_sd_ustar_g_c_nt = GPP_sd * 1.0368
+  )
+
+# Join the two tables by DoY
+daily_uncertainty <- aggDay %>%
+  select(Year, DoY, DateTime) %>%
+  left_join(daily_uncertainty, by = "DoY")
+
+# store data
+
+#mean_sd_daily_gC_all_gpp_nt <- data.frame()
+
+# summary all years
+mean_sd_daily_gC_all_gpp_nt <- rbind(mean_sd_daily_gC_all_gpp_nt, daily_uncertainty)
+mean_sd_daily_gC_all_gpp_nt
+
+# export
+# mean_sd_daily_gC_all_gpp_nt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_gpp_nt_conv.xlsx")
+
+# export
+# mean_sd_daily_gC_all_gpp_nt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_gpp_nt_div.xlsx")
+
+# plot daily means with uncertainties
+
+# u* uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = gpp_mean_g_c_m2_day_nt  - gpp_sd_ustar_g_c_nt  , ymax = gpp_mean_g_c_m2_day_nt  + gpp_sd_ustar_g_c_nt  ), fill = "lightgreen", alpha = 0.75) +
+  geom_line(aes(y = gpp_mean_g_c_m2_day_nt), color = "darkgreen", size = 1) +
+  labs(
+    title = "Daily GPP (NT) with u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+
+# estimate u* treshold uncertainty for daily RECO means with nighttime partitioning
+
+computeDailyMeanRECO <- function(ds, suffix){
+  column_name <- paste0("Reco_", suffix)
+  ds %>%
+   # mutate(DoY = as.POSIXlt(DateTime - 15*60)$yday) %>% # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+    group_by(DoY) %>%
+    summarise(daily_mean = mean(.data[[column_name]], na.rm = TRUE)) %>%
+    ungroup()
+}
+
+FilledEddyData <- CombinedData %>%
+  mutate(
+    DateTime = EddyDataWithPosix$DateTime     # take time stamp form input data
+    #, DoY = as.POSIXlt(DateTime - 15*60)$yday # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+  ) %>% 
+  filter(crop_year == year_of_interest) 
+
+daily_means_list <- EProc$sApplyUStarScen(computeDailyMeanRECO, FilledEddyData)
+
+# Add a name for each scenario (from names of the list)
+names(daily_means_list) <- names(daily_means_list)
+# Convert to wide format with DoY as common column
+daily_wide <- reduce(daily_means_list, full_join, by = "DoY")
+colnames(daily_wide) <- c("DoY", paste0("Reco_", names(daily_means_list)))
+
+daily_summary <- daily_wide %>%
+  rowwise() %>%
+  mutate(
+    Reco_mean = mean(c_across(starts_with("Reco_")), na.rm = TRUE),
+    Reco_sd = sd(c_across(starts_with("Reco_")), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Convert to g C m-2 day-1
+daily_uncertainty <- daily_summary %>%
+  mutate(
+    reco_mean_g_c_m2_day_nt = Reco_mean  * 1.0368,
+    reco_sd_ustar_g_c_nt = Reco_sd * 1.0368
+  )
+
+# Join the two tables by DoY
+daily_uncertainty <- aggDay %>%
+  select(Year, DoY, DateTime) %>%
+  left_join(daily_uncertainty, by = "DoY")
+
+# store data
+
+#mean_sd_daily_gC_all_reco_nt <- data.frame()
+
+# summary all years
+mean_sd_daily_gC_all_reco_nt <- rbind(mean_sd_daily_gC_all_reco_nt, daily_uncertainty)
+mean_sd_daily_gC_all_reco_nt
+
+# export
+# mean_sd_daily_gC_all_reco_nt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_reco_nt_conv.xlsx")
+
+# export
+# mean_sd_daily_gC_all_reco_nt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_reco_nt_div.xlsx")
+
+# plot daily means with uncertainties
+
+# u* uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = reco_mean_g_c_m2_day_nt  - reco_sd_ustar_g_c_nt  , ymax = reco_mean_g_c_m2_day_nt  + reco_sd_ustar_g_c_nt  ), fill = "lightgreen", alpha = 0.75) +
+  geom_line(aes(y = reco_mean_g_c_m2_day_nt), color = "darkgreen", size = 1) +
+  labs(
+    title = "Daily RECO (NT) with u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# estimate u* treshold uncertainty for daily GPP means with DAYTIME partitioning
+
+computeDailyMeanGPP <- function(ds, suffix){
+  column_name <- paste0("GPP_DT_", suffix)
+  ds %>%
+    #mutate(DoY = as.POSIXlt(DateTime - 15*60)$yday) %>% # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+    group_by(DoY) %>%
+    summarise(daily_mean = mean(.data[[column_name]], na.rm = TRUE)) %>%
+    ungroup()
+}
+
+FilledEddyData <- CombinedData %>%
+  mutate(
+    DateTime = EddyDataWithPosix$DateTime     # take time stamp form input data
+    #, DoY = as.POSIXlt(DateTime - 15*60)$yday # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+  ) %>% 
+  filter(crop_year == year_of_interest) 
+
+daily_means_list <- EProc$sApplyUStarScen(computeDailyMeanGPP, FilledEddyData)
+
+# Add a name for each scenario (from names of the list)
+names(daily_means_list) <- names(daily_means_list)
+# Convert to wide format with DoY as common column
+daily_wide <- reduce(daily_means_list, full_join, by = "DoY")
+colnames(daily_wide) <- c("DoY", paste0("GPP_DT_", names(daily_means_list)))
+
+daily_summary <- daily_wide %>%
+  rowwise() %>%
+  mutate(
+    GPP_DT_mean = mean(c_across(starts_with("GPP_DT_")), na.rm = TRUE),
+    GPP_DT_sd = sd(c_across(starts_with("GPP_DT_")), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Convert to g C m-2 day-1
+daily_uncertainty <- daily_summary %>%
+  mutate(
+    gpp_mean_g_c_m2_day_dt = GPP_DT_mean  * 1.0368,
+    gpp_sd_ustar_g_c_dt = GPP_DT_sd * 1.0368
+  )
+
+# Join the two tables by DoY
+daily_uncertainty <- aggDay %>%
+  select(Year, DoY, DateTime) %>%
+  left_join(daily_uncertainty, by = "DoY")
+
+# store data
+
+#mean_sd_daily_gC_all_gpp_dt <- data.frame()
+
+# summary all years
+mean_sd_daily_gC_all_gpp_dt <- rbind(mean_sd_daily_gC_all_gpp_dt, daily_uncertainty)
+mean_sd_daily_gC_all_gpp_dt
+
+# export
+# mean_sd_daily_gC_all_gpp_dt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_gpp_dt_conv.xlsx")
+
+# export
+# mean_sd_daily_gC_all_gpp_dt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_gpp_dt_div.xlsx")
+
+# plot daily means with uncertainties
+
+# u* uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = gpp_mean_g_c_m2_day_dt  - gpp_sd_ustar_g_c_dt  , ymax = gpp_mean_g_c_m2_day_dt  + gpp_sd_ustar_g_c_dt  ), fill = "lightgreen", alpha = 0.75) +
+  geom_line(aes(y = gpp_mean_g_c_m2_day_dt), color = "darkgreen", size = 1) +
+  labs(
+    title = "Daily GPP (DT) with u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# estimate u* treshold uncertainty for daily RECO means with daytime partitioning
+
+computeDailyMeanRECO <- function(ds, suffix){
+  column_name <- paste0("Reco_DT_", suffix)
+  ds %>%
+    #mutate(DoY = as.POSIXlt(DateTime - 15*60)$yday) %>% # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+    group_by(DoY) %>%
+    summarise(daily_mean = mean(.data[[column_name]], na.rm = TRUE)) %>%
+    ungroup()
+}
+
+FilledEddyData <- CombinedData %>%
+  mutate(
+    DateTime = EddyDataWithPosix$DateTime     # take time stamp form input data
+    #, DoY = as.POSIXlt(DateTime - 15*60)$yday # I realized this was causing an issue (doy 365 was not created or was override), so I commented out and this seemed to fix the issue
+  ) %>% 
+  filter(crop_year == year_of_interest) 
+
+daily_means_list <- EProc$sApplyUStarScen(computeDailyMeanRECO, FilledEddyData)
+
+# Add a name for each scenario (from names of the list)
+names(daily_means_list) <- names(daily_means_list)
+# Convert to wide format with DoY as common column
+daily_wide <- reduce(daily_means_list, full_join, by = "DoY")
+colnames(daily_wide) <- c("DoY", paste0("Reco_DT_", names(daily_means_list)))
+
+daily_summary <- daily_wide %>%
+  rowwise() %>%
+  mutate(
+    Reco_DT_mean = mean(c_across(starts_with("Reco_DT_")), na.rm = TRUE),
+    Reco_DT_sd = sd(c_across(starts_with("Reco_DT_")), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Convert to g C m-2 day-1
+daily_uncertainty <- daily_summary %>%
+  mutate(
+    reco_mean_g_c_m2_day_dt = Reco_DT_mean  * 1.0368,
+    reco_sd_ustar_g_c_dt = Reco_DT_sd * 1.0368
+  )
+
+# Join the two tables by DoY
+daily_uncertainty <- aggDay %>%
+  select(Year, DoY, DateTime) %>%
+  left_join(daily_uncertainty, by = "DoY")
+
+# store data
+
+#mean_sd_daily_gC_all_reco_dt <- data.frame()
+
+# summary all years
+mean_sd_daily_gC_all_reco_dt <- rbind(mean_sd_daily_gC_all_reco_dt, daily_uncertainty)
+mean_sd_daily_gC_all_reco_dt
+
+# export
+# mean_sd_daily_gC_all_reco_dt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_reco_dt_conv.xlsx")
+
+# export
+# mean_sd_daily_gC_all_reco_dt %>%
+#   write_xlsx(path = "mean_sd_daily_gC_all_reco_dt_div.xlsx")
+
+# plot daily means with uncertainties
+
+# u* uncertainty
+
+daily_uncertainty %>%
+  ggplot(aes(x = DoY)) +
+  geom_ribbon(aes(ymin = reco_mean_g_c_m2_day_dt  - reco_sd_ustar_g_c_dt  , ymax = reco_mean_g_c_m2_day_dt  + reco_sd_ustar_g_c_dt  ), fill = "lightgreen", alpha = 0.75) +
+  geom_line(aes(y = reco_mean_g_c_m2_day_dt), color = "darkgreen", size = 1) +
+  labs(
+    title = "Daily RECO (DT) with u* uncertainty",
+    x = "Date",
+    y = "CO2 (g C/m2/day)"
+  ) +
+  facet_wrap(Year~., nrow=2)+
+  theme_bw()
+
+# u* threshold uncertainty for annual estimations
 
 # There is also flux uncertainty due to uncertainty in u* threshold estimation. Since the same threshold is used for all times in a given uStar scenario, the relative uncertainty of this component does not decrease when aggregating across time.
 # 
@@ -894,12 +1295,11 @@ colnames(data.mean_NEE_U50_f) <- 'mean_NEE_U50_f'
 NEE_sdAnnual <- cbind(data.mean_NEE_U50_f,NEE_sdAnnual)
 
 # Convert to annual sums
-conv_gCO2 <- 1/(10^6)*44.01*60*60*24*length(results$NEE_U50_f)/48 # Converts umol to mol, mol to gCO2, x seconds in a year # note from Agustin, I think this is because the original unit is in umolm-2s-1
+#conv_gCO2 <- 1/(10^6)*44.01*60*60*24*length(results$NEE_U50_f)/48 # Converts umol to mol, mol to gCO2, x seconds in a year # note from Agustin, I think this is because the original unit is in umolm-2s-1
 conv_gC <- 1/(10^6)*12.011*60*60*24*length(results$NEE_U50_f)/48 # Converts umol to mol, mol to gCO2, x seconds in a year
 
 # g CO2
 # mean_sdAnnual_gCO2_all <- data.frame()
-# mean_sdAnnual_gC_all <- data.frame()
 
 # mean_sdAnnual_gCO2 <- mean_sdAnnual*conv_gCO2
 # mean_sdAnnual_gCO2
@@ -907,8 +1307,11 @@ conv_gC <- 1/(10^6)*12.011*60*60*24*length(results$NEE_U50_f)/48 # Converts umol
 # mean_sdAnnual_gCO2_all <- rbind(mean_sdAnnual_gCO2_all,mean_sdAnnual_gCO2)
 
 # g C
+#mean_sdAnnual_gC_all <- data.frame()
+
 mean_sdAnnual_gC <- mean_sdAnnual*conv_gC
 mean_sdAnnual_gC # final units in g C/m2/year
+
 
 # ading year (change every time you run the code)
 
@@ -921,12 +1324,13 @@ mean_sdAnnual_gC_all <- rbind(mean_sdAnnual_gC_all,mean_sdAnnual_gC)
 mean_sdAnnual_gC_all
 
 # export
-# mean_sdAnnual_gC_all %>% 
+# mean_sdAnnual_gC_all %>%
 #   write_xlsx(path = "mean_sdAnnual_gC_all_conv.xlsx")
 
 # export
 # mean_sdAnnual_gC_all %>%
 #   write_xlsx(path = "mean_sdAnnual_gC_all_div.xlsx")
+
 
 # plotting annual values with uncertainty
 
@@ -2375,6 +2779,43 @@ CombinedData_p12 %>%
 #     axis.text.x = element_text(angle = 45, hjust = 1)
 #   ) +
 #   ylab("Annual cumulative C flux (g/m2/year)")
+
+
+#######################################################################
+
+#######################################################################
+################## understanding conversion factors ###################
+
+# ─────────────────────────────────────────────────────────────
+# 📌 CONVERSION FACTORS — µmol CO2 m⁻² s⁻¹ → g C m⁻² per unit time
+# ─────────────────────────────────────────────────────────────
+
+# General formula:
+#   flux (µmol m⁻² s⁻¹) × time interval (in seconds) × (12.011 g/mol) / 1e6
+#   → gives you g C m⁻² for that time interval
+
+# ✅ HALF-HOURLY to g C m⁻²:
+conv_factor_halfhour <- 12.011 / 1e6 * 1800  # 1800 = 30 min in seconds
+# Use this to convert half-hourly fluxes (e.g., NEE) to g C:
+# e.g., NEE_gC = NEE * conv_factor_halfhour
+
+# ✅ HOURLY to g C m⁻²:
+conv_factor_hour <- 12.011 / 1e6 * 3600  # 3600 = 1 hour in seconds
+
+# ✅ DAILY MEAN FLUX (µmol m⁻² s⁻¹) to g C m⁻² d⁻¹:
+conv_factor_day <- 12.011 / 1e6 * 86400  # 86400 = 24 hrs in seconds
+# Multiply daily mean NEE by this to get g C m⁻² day⁻¹
+
+# ✅ ANNUAL MEAN FLUX to g C m⁻² year⁻¹:
+# This approach assumes a mean NEE value and scales it to the year
+# Multiply by total seconds in a year (365 * 24 * 60 * 60 = 31,536,000)
+conv_factor_annual <- 12.011 / 1e6 * 60 * 60 * 24 * 365  # = 378.0 approx.
+# OR dynamically, if you want to account for the number of records in your dataset:
+conv_factor_annual_dynamic <- 1 / 1e6 * 12.011 * 60 * 60 * 24 * length(results$NEE_U50_f) / 48
+# (Assumes 48 half-hourly records per day)
+
+# 🚨 Note: Pick the correct factor depending on whether you're converting instantaneous fluxes
+# (half-hourly, hourly) or aggregated mean values (daily, annual)
 
 
 #######################################################################
