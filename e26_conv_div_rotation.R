@@ -374,6 +374,8 @@ obs_soil_temp_p12 <- obs_soil_temp %>%
 obs_soil_temp_p34 <- obs_soil_temp %>% 
   filter(group ==  "P3_P4")
 
+str(obs_soil_temp_p12)
+
 # obs_soil_temp$date <- as.Date(obs_soil_temp$Date, format = "%m/%d/%Y")
 # obs_soil_temp$year <- year(obs_soil_temp$date)
 # obs_soil_temp$month <- month(obs_soil_temp$date)
@@ -894,6 +896,8 @@ combined_data <- combined_data %>%
   )
 
 # yield 
+library(ggpattern)
+
 combined_data %>%
   filter(year > 2017) %>% 
   pivot_longer(
@@ -902,14 +906,29 @@ combined_data %>%
     values_to = "yield_value"
   ) %>%
   mutate(
-    yield_category = ifelse(grepl("obs", yield_type), "obs", "mod"),
+    yield_category = ifelse(grepl("obs", yield_type), "O", "M"),
     yield_sd = case_when(
       yield_type == "crop_yield_obs_kg_ha_mean" ~ crop_yield_obs_kg_ha_sd,
       TRUE ~ NA_real_
     )
   ) %>%
-  ggplot(aes(x = yield_category, y = yield_value, fill = yield_category)) +
-  geom_bar(stat = "identity", position = "dodge", colour = "black") +
+  ggplot(aes(
+    x = yield_category, 
+    y = yield_value,
+    pattern = yield_category,
+    pattern_fill = yield_category,
+    pattern_colour = yield_category,
+    fill = yield_category
+  )) +
+  geom_bar_pattern(
+    stat = "identity",
+    position = "dodge",
+    colour = "black",
+    pattern_density = 0.5,
+    pattern_spacing = 0.2,
+    pattern_angle = 45,
+    pattern_key_scale_factor = 2
+  ) +
   geom_errorbar(
     aes(ymin = yield_value - yield_sd, ymax = yield_value + yield_sd),
     position = position_dodge(width = 0.9),
@@ -918,26 +937,27 @@ combined_data %>%
   scale_y_continuous(
     limits = c(0, 13500),
     breaks = seq(0, 13500, by = 2500)
-  )+
-  facet_wrap(~ crop_year, nrow = 1) +
-  scale_fill_manual(values = c("obs" = "#009E73", "mod" = "#999999")) +
-  labs(
-    x = "Data Type", 
-    y = expression(Crop~Yield~(kg~ha^{-1}))
   ) +
+  facet_wrap(~ crop_year, nrow = 1) +
+  scale_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_manual(values = c("O" = "stripe", "M" = "none")) +
+  scale_pattern_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_colour_manual(values = c("O" = "white", "M" = "#999999")) +
+  labs(y = expression(Crop~Yield~(kg~ha^{-1}))) +
   geom_text(
-    aes(label = round(yield_value, 0)), 
+    aes(label = round(yield_value, 0), angle = 90), 
     position = position_dodge(width = 0.9), 
-    vjust = -1.5
+    vjust = 0.5,
+    hjust = -0.3
   ) +
   theme_bw() +
   theme(
     legend.position = "none",
-    panel.grid = element_blank() 
+    axis.title.x = element_blank(),
+    panel.grid = element_blank()
   )
 
-ggsave(filename = "yield_conv.png",  width = 11, height = 4, dpi = 300)
-
+ggsave(filename = "yield_conv.png",  width = 4.5, height = 3.8, dpi = 300)
 
 ## statistics
 
@@ -2447,14 +2467,17 @@ ggplot() +
   
   # reco
   
-  # geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#D55E00", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  #  geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#D55E00", linetype = 1, size = 0.7, alpha = 0.5)+
+  # geom_ribbon(data = filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = reco_mean_g_c_m2_day_nt  - reco_sd_ustar_g_c_nt, ymax = reco_mean_g_c_m2_day_nt  + reco_sd_ustar_g_c_nt), fill = "#D55E00", alpha = 0.3) +
   
   
   geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_dt), color = "#D55E00", linetype = 1, size = 0.7, alpha = 0.5)+
   geom_ribbon(data = filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = reco_mean_g_c_m2_day_dt  - reco_sd_ustar_g_c_dt, ymax = reco_mean_g_c_m2_day_dt  + reco_sd_ustar_g_c_dt), fill = "#D55E00", alpha = 0.3) +
-  
+  # 
   # gpp
-  # geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_nt), color = "#009E73", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  #  geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_nt), color = "#009E73", linetype = 1, size = 0.7, alpha = 0.5)+
+  # geom_ribbon(data = filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = -gpp_mean_g_c_m2_day_nt  - gpp_sd_ustar_g_c_nt, ymax = -gpp_mean_g_c_m2_day_nt  + gpp_sd_ustar_g_c_nt), fill = "#009E73", alpha = 0.3) +
+  # 
   
   geom_line(data =  filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_dt), color = "#009E73", linetype = 1, size = 0.7, alpha = 0.5)+
   geom_ribbon(data = filter(obs_co2_p1, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = -gpp_mean_g_c_m2_day_dt  - gpp_sd_ustar_g_c_dt, ymax = -gpp_mean_g_c_m2_day_dt  + gpp_sd_ustar_g_c_dt), fill = "#009E73", alpha = 0.3) +
@@ -2499,9 +2522,11 @@ ggplot() +
     limits = c(1, 365),
     expand = c(0, 0)
   )+
-  scale_y_continuous(limits = c(-30, 20), breaks = seq(-30, 20, by = 5))
+  scale_y_continuous(limits = c(-35, 30), breaks = seq(-30, 30, by = 10))
 
-ggsave(filename = "modeled_reco_gpp_conv.png",  width = 11, height = 6, dpi = 300)
+ggsave(filename = "modeled_reco_gpp_conv.png",  width = 8, height = 5, dpi = 300)
+
+#ggsave(filename = "modeled_reco_gpp_conv.png",  width = 4, height = 10, dpi = 300)
 
 # nee
 
@@ -2563,7 +2588,7 @@ theme_bw() +
   scale_y_continuous(limits = c(-20, 10), breaks = seq(-20, 10, by = 5))
 
 
-ggsave(filename = "modeled_nee_conv.png",  width = 12, height = 6, dpi = 300)
+ggsave(filename = "modeled_nee_conv.png",  width = 8, height = 5, dpi = 300)
 
 # annual
 
@@ -2749,7 +2774,6 @@ plot_df %>%
     axis.title.x = element_blank(),
     panel.grid = element_blank()
   )
-
 
 ggsave(filename = "annual_conv.png",  width = 11.5, height = 5, dpi = 300)
 
@@ -3475,47 +3499,68 @@ combined_data <- merge(obs_yield_p34_mean_sd, mod_yield_p3, by = c("year", "crop
 #             vjust = -1) +
 #   theme_bw()
 
-# new graph
-
-main_crop_data <- combined_data %>% 
-  filter(crop_type %in% c("corn", "soybean", "winter wheat")) %>% 
-  mutate(crop_year = case_when(
-    year == 2018 ~ "18/19",
-    year == 2019 ~ "19/20",
-    year == 2020 ~ "20/21",
-    year == 2021 ~ "21/22",
-    year == 2022 ~ "22/23",
-    year == 2023 ~ "23/24",
-    year == 2024 ~ "24/25"
-  ))
+# graph 
 
 main_crop_data %>%
+  filter(year > 2017) %>% 
   pivot_longer(
     cols = c(crop_yield_obs_kg_ha_mean, crop_yield_mod_kg_ha), 
     names_to = "yield_type", 
     values_to = "yield_value"
   ) %>%
   mutate(
-    yield_category = ifelse(grepl("obs", yield_type), "obs", "mod"),
-    yield_sd = ifelse(yield_type == "crop_yield_obs_kg_ha_mean", crop_yield_obs_kg_ha_sd, NA)
+    yield_category = ifelse(grepl("obs", yield_type), "O", "M"),
+    yield_sd = case_when(
+      yield_type == "crop_yield_obs_kg_ha_mean" ~ crop_yield_obs_kg_ha_sd,
+      TRUE ~ NA_real_
+    )
   ) %>%
-  ggplot(aes(x = yield_category, y = yield_value, fill = yield_category)) +
-  geom_bar(stat = "identity", position = "dodge", colour = "black") +
+  ggplot(aes(
+    x = yield_category, 
+    y = yield_value,
+    pattern = yield_category,
+    pattern_fill = yield_category,
+    pattern_colour = yield_category,
+    fill = yield_category
+  )) +
+  geom_bar_pattern(
+    stat = "identity",
+    position = "dodge",
+    colour = "black",
+    pattern_density = 0.5,
+    pattern_spacing = 0.2,
+    pattern_angle = 45,
+    pattern_key_scale_factor = 2
+  ) +
   geom_errorbar(
     aes(ymin = yield_value - yield_sd, ymax = yield_value + yield_sd),
-    position = position_dodge(width = 0.9), width = 0.3
+    position = position_dodge(width = 0.9),
+    width = 0.3
   ) +
-  scale_y_continuous(limits = c(0,13500), breaks = seq(0, 13500, 2500)) +
+  scale_y_continuous(
+    limits = c(0, 13500),
+    breaks = seq(0, 13500, by = 2500)
+  ) +
   facet_wrap(~ crop_year, nrow = 1) +
-  scale_fill_manual(values = c("obs" = "#009E73", "mod" = "#999999")) +
-  labs(x = "Data Type", y = expression("Crop Yield (kg " * ha^{-1} * ")")) +
-  geom_text(aes(label = round(yield_value, 0)), 
-            position = position_dodge(width = 0.9), 
-            vjust = -1) +
+  scale_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_manual(values = c("O" = "stripe", "M" = "none")) +
+  scale_pattern_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_colour_manual(values = c("O" = "white", "M" = "#999999")) +
+  labs(y = expression(Crop~Yield~(kg~ha^{-1}))) +
+  geom_text(
+    aes(label = round(yield_value, 0), angle = 90), 
+    position = position_dodge(width = 0.9), 
+    vjust = 0.5,
+    hjust = -0.3
+  ) +
   theme_bw() +
-  theme(panel.grid = element_blank(), legend.position = "none")
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    panel.grid = element_blank()
+  )
 
-ggsave(filename = "crop_yield_div.png",  width = 11, height = 4, dpi = 300)
+ggsave(filename = "yield_div.png",  width = 4.5, height = 3.8, dpi = 300)
 
 # cover crop graph
 
@@ -3547,7 +3592,7 @@ plot_data <- cover_crop_data %>%
     values_to = "yield_value"
   ) %>%
   mutate(
-    yield_category = ifelse(grepl("obs", yield_type), "Obs", "Mod"),
+    yield_category = ifelse(grepl("obs", yield_type), "O", "M"),
     yield_sd = case_when(
       yield_type == "crop_yield_obs_kg_ha_mean" ~ crop_yield_obs_kg_ha_sd,
       TRUE ~ NA_real_
@@ -3555,16 +3600,41 @@ plot_data <- cover_crop_data %>%
   )
 
 # Step 3: Plot
-ggplot(plot_data, aes(x = season, y = yield_value, fill = yield_category)) +
-  geom_col(position = position_dodge(width = 0.8), color = "black", width = 0.7) +
+ggplot(plot_data, aes(x = season, y = yield_value,
+                      pattern = yield_category,
+                      pattern_fill = yield_category,
+                      pattern_colour = yield_category,
+                      fill = yield_category
+                      
+                      )) +
+  #geom_col(position = position_dodge(width = 0.8), color = "black", width = 0.7) +
+  
+  geom_bar_pattern(
+    stat = "identity",
+    position = "dodge",
+    colour = "black",
+    pattern_density = 0.5,
+    pattern_spacing = 0.15,
+    pattern_angle = 45,
+    pattern_key_scale_factor = 2
+  ) +
+  scale_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_manual(values = c("O" = "stripe", "M" = "none")) +
+  scale_pattern_fill_manual(values = c("O" = "#009E73", "M" = "#999999")) +
+  scale_pattern_colour_manual(values = c("O" = "white", "M" = "#999999")) +
+  
   geom_errorbar(aes(ymin = yield_value - yield_sd, ymax = yield_value + yield_sd),
                 position = position_dodge(width = 0.8), width = 0.2, na.rm = TRUE) +
-  geom_text(aes(label = round(yield_value, 0)),
-            position = position_dodge(width = 0.8), vjust = -0.5, size = 3.2) +
+  geom_text(
+    aes(label = round(yield_value, 0), angle = 90), 
+    position = position_dodge(width = 0.9), 
+    vjust = 0.4,
+    hjust = -0.5
+  ) +
   facet_wrap(~ crop_year, nrow = 1) +
-  scale_fill_manual(values = c("Obs" = "#009E73", "Mod" = "#999999")) +
+  #scale_fill_manual(values = c("Obs" = "#009E73", "Mod" = "#999999")) +
   scale_y_continuous(limits = c(0, 3500), breaks = seq(0, 3500, 500)) +
-  labs(x = NULL, y = expression("Cover crop biomass (kg DM " * ha^{-1} * ")")) +
+  labs(x = NULL, y = expression("Cover crop biomass (kg DM"* ha^{-1} *")")) +
   theme_bw() +
   scale_x_discrete(expand = c(0.25, 0.25))+
   theme(
@@ -3574,8 +3644,8 @@ ggplot(plot_data, aes(x = season, y = yield_value, fill = yield_category)) +
     axis.text.x = element_text(size = 10)
   )
 
+ggsave(filename = "cc_yield_div.png",  width = 4.3, height = 3.8, dpi = 300)
 
-#ggsave(filename = "cc_yield_div.png",  width = 11, height = 4, dpi = 300)
 
 
 ### statistics
@@ -5413,14 +5483,16 @@ ggplot() +
   
   # reco
   
-  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#D55E00", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#D55E00", linetype = 1, size = 0.7, alpha = 0.5)+
+  # geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = reco_mean_g_c_m2_day_nt  - reco_sd_ustar_g_c_nt, ymax = reco_mean_g_c_m2_day_nt  + reco_sd_ustar_g_c_nt), fill = "#D55E00", alpha = 0.3) +
   
   
   geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_dt), color = "#D55E00", linetype = 1, size = 0.7, alpha = 0.5)+
   geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = reco_mean_g_c_m2_day_dt  - reco_sd_ustar_g_c_dt, ymax = reco_mean_g_c_m2_day_dt  + reco_sd_ustar_g_c_dt), fill = "#D55E00", alpha = 0.3) +
   
   # gpp
-  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_nt), color = "#009E73", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_nt), color = "#009E73", linetype = 1, size = 0.7, alpha = 0.5)+
+  # geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = -gpp_mean_g_c_m2_day_nt  - gpp_sd_ustar_g_c_nt, ymax = -gpp_mean_g_c_m2_day_nt  + gpp_sd_ustar_g_c_nt), fill = "#009E73", alpha = 0.3) +
   
   geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_dt), color = "#009E73", linetype = 1, size = 0.7, alpha = 0.5)+
   geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = -gpp_mean_g_c_m2_day_dt  - gpp_sd_ustar_g_c_dt, ymax = -gpp_mean_g_c_m2_day_dt  + gpp_sd_ustar_g_c_dt), fill = "#009E73", alpha = 0.3) +
@@ -5465,9 +5537,12 @@ ggplot() +
     limits = c(1, 365),
     expand = c(0, 0)
   )+
-  scale_y_continuous(limits = c(-35, 20), breaks = seq(-35, 20, by = 5))
+  scale_y_continuous(limits = c(-35, 30), breaks = seq(-30, 30, by = 10))
 
-ggsave(filename = "modeled_reco_gpp_div.png",  width = 11, height = 6, dpi = 300)
+ggsave(filename = "modeled_reco_gpp_div.png",  width = 8, height = 5, dpi = 300)
+
+#ggsave(filename = "modeled_reco_gpp_div.png",  width = 4, height = 10, dpi = 300)
+
 
 # nee
 
@@ -5528,7 +5603,7 @@ ggplot() +
   )+
   scale_y_continuous(limits = c(-20, 10), breaks = seq(-20, 10, by = 5))
 
-ggsave(filename = "modeled_nee_div.png",  width = 12, height = 6, dpi = 300)
+ggsave(filename = "modeled_nee_div.png",  width = 8, height = 5, dpi = 300)
 
 # annual graphs
 
@@ -6271,9 +6346,232 @@ metrics
 
 #########################
 
+###########################################
+########## climate graph ##################
+
+# exctracting the air temperature from the ReddyProc inputs, as those should allow me to calculate a more accurate average than just using min and max temperature in the DNDC file
+
+library(REddyProc)
+
+#2018
+EddyData_2018_p3 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p3_2018")
+EddyData_2018_p3 <- EddyData_2018_p3 %>%
+  filter(DoY < 194) 
+EddyData_2018_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2018") 
+EddyData_2018_p1 <- EddyData_2018_p1 %>%
+  filter(DoY > 193)
+EddyData_2019_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2019")
+EddyData_2020_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2020")
+EddyData_2021_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2021")
+EddyData_2022_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2022")
+EddyData_2023_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2023")
+EddyData_2024_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2024")
+
+# merging all years in a single dataset
+
+EddyData_p1 <- rbind(EddyData_2018_p3, EddyData_2018_p1, EddyData_2019_p1, EddyData_2020_p1, EddyData_2021_p1, EddyData_2022_p1, EddyData_2023_p1,EddyData_2024_p1) 
+
+daily_temp <- EddyData_p1 %>% 
+  select(Year, DoY, Tair) %>% 
+  group_by(Year, DoY) %>% 
+  summarise(
+    daily_temp = mean(Tair, na.rm = TRUE)
+  )
+
+# retriving the rest of the data from DNDC files 
+
+col_names <- c("julian_day", "obs_max_temp_c", "obs_min_temp_c", "obs_precip_cm", "obs_wind2m_ms", "obs_rad_mjm2day", "obs_rh_pct")
+
+climate_2018 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2018.txt", skip = 1, header = FALSE, col.names = col_names)  
+climate_2019 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2019.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2020 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2020.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2021 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2021.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2022 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2022.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2023 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2023.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2024 <- read.table("C:/DNDC/sites/elora_c/data/climate/elora2024.txt", skip = 1, header = FALSE, col.names = col_names)
+climate_2018$Year = 2018
+climate_2019$Year = 2019
+climate_2020$Year = 2020
+climate_2021$Year = 2021
+climate_2022$Year = 2022
+climate_2023$Year = 2023
+climate_2024$Year = 2024
+
+climate_data <- rbind(climate_2018, climate_2019, climate_2020, climate_2021, climate_2022, climate_2023, climate_2024) 
+
+# plotting
+
+# Define the wrapped crop DOY ticks you want on the x-axis
+custom_breaks <- c(1, 51, 101, 151, 201, 251, 301, 351)
+
+custom_labels <- c("121", "171", "221", "271", "321", "6", "56", "106")
+
+custom_labels_facets <- c(
+  "18/19" = "Year 1 (18-19)",
+  "19/20" = "Year 2 (19-20)",
+  "20/21" = "Year 3 (20-21)",
+  "21/22" = "Year 4 (21-22)",
+  "22/23" = "Year 5 (22-23)",
+  "23/24" = "Year 6 (23-24)"
+)
+
+# Add a row for the DOY 365 line label
+doy365_label <- data.frame(
+  doy_crop = 245,  # crop day corresponding to DOY 365 after wrapping
+  label = "DOY = 365",
+  y_pos = min(mgmt_labels$y_pos)
+)
+
+combined <- daily_temp %>%
+  mutate(julian_day = DoY) %>%
+  left_join(climate_data %>% 
+              mutate(julian_day = julian_day), 
+            by = c("Year", "julian_day"))
+
+# there seems to be some missing values for temperature, I will quickly interpolate, as it is just a few
+
+temp_fixed <- combined$daily_temp  
+# interpolate only for the NA positions
+temp_fixed[is.na(temp_fixed)] <- na.approx(
+  temp_fixed, 
+  x = combined$julian_day, 
+  na.rm = FALSE
+)[is.na(temp_fixed)]
+# put it back
+combined$daily_temp <- temp_fixed
 
 
 
+combined <- combined %>%
+  mutate(
+    crop_year = ifelse(Year == 2018 & DoY > 120 | Year == 2019 & DoY < 121, "18/19",
+                       ifelse(Year == 2019 & DoY > 120 | Year == 2020 & DoY < 121, "19/20",
+                              ifelse(Year == 2020 & DoY > 120 | Year == 2021 & DoY < 121, "20/21",
+                                     ifelse(Year == 2021 & DoY > 120 | Year == 2022 & DoY < 121, "21/22",
+                                            ifelse(Year == 2022 & DoY > 120 | Year == 2023 & DoY < 121, "22/23",
+                                                   ifelse(Year == 2023 & DoY > 120 | Year == 2024 & DoY < 121, "23/24", NA))))))
+    
+  )
+
+combined <- combined %>%
+  filter(!is.na(crop_year)) %>%
+  mutate(
+    doy_crop = case_when(
+      DoY >= 121 ~ DoY - 120,          # DOY 121 → 1, 122 → 2, ..., 365 → 245
+      DoY < 121  ~ DoY + (365 - 120)   # DOY 1 → 246, ..., 120 → 365
+    )
+  )
+
+ggplot(combined, aes(x = doy_crop)) +
+  # Daily temperature (primary axis)
+  geom_line(aes(y = daily_temp), color = "#D55E00", size = 0.5, alpha=0.8) +
+  # Precipitation (rescaled to plot against same primary axis, but displayed on secondary axis)
+  geom_col(aes(y = obs_precip_cm*10 / 4), fill = "#0072B2",  size=1) +
+  scale_y_continuous(
+    name = "Temperature (°C)",
+    sec.axis = sec_axis(~.*4, name = "Precipitation (mm)")
+  ) +
+  labs(x = "Day of Year") +
+  theme_bw()+
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    #axis.title.x = element_blank(),
+    #panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_continuous(
+    breaks = custom_breaks,
+    labels = custom_labels,
+    limits = c(1, 365),
+    expand = c(0, 0)
+  )
+
+ggsave(filename = "climate.png", width = 10, height = 5, dpi = 300)
+
+
+# respiration and GPP (displaying either NT or DT-partitioned GPP, in blue and orange, respectively)
+
+ggplot() +
+  
+  geom_hline(yintercept = 0, color = "black")+
+  
+  
+  # gpp
+  geom_line(
+    data = mod_co2_p3,
+    aes(x = doy_crop, y = mod_gpp),
+    size = 0.7, color = "black", alpha = 0.6
+  ) +
+  
+  # reco
+  geom_line(
+    data = mod_co2_p3,
+    aes(x = doy_crop, y = mod_resp),
+    size = 0.7, color = "black", alpha = 0.6
+  ) +
+  
+  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#0072B2", linetype = 1, size = 0.7, alpha = 0.5)+
+  # geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = doy_crop, ymin = reco_mean_g_c_m2_day_nt  - reco_sd_ustar_g_c_nt, ymax = reco_mean_g_c_m2_day_nt  + reco_sd_ustar_g_c_nt), fill = "#0072B2", alpha = 0.3) +
+  
+  # reco
+  
+  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_nt), color = "#D55E00", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  
+  geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = reco_mean_g_c_m2_day_dt), color = "#D55E00", linetype = 1, size = 0.7, alpha = 0.5)+
+  geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = reco_mean_g_c_m2_day_dt  - reco_sd_ustar_g_c_dt, ymax = reco_mean_g_c_m2_day_dt  + reco_sd_ustar_g_c_dt), fill = "#D55E00", alpha = 0.3) +
+  
+  # gpp
+  # geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_nt), color = "#009E73", linetype = "dotted", size = 0.7, alpha = 0.5)+
+  
+  geom_line(data =  filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), y = -gpp_mean_g_c_m2_day_dt), color = "#009E73", linetype = 1, size = 0.7, alpha = 0.5)+
+  geom_ribbon(data = filter(obs_co2_p3, !is.na(crop_year)), aes(x = as.numeric(doy_crop), ymin = -gpp_mean_g_c_m2_day_dt  - gpp_sd_ustar_g_c_dt, ymax = -gpp_mean_g_c_m2_day_dt  + gpp_sd_ustar_g_c_dt), fill = "#009E73", alpha = 0.3) +
+  
+  geom_vline(
+    data = mgmt_dates_p3,
+    aes(xintercept = doy_crop),
+    color = "brown", linetype = "dashed", size = 0.6
+  ) +
+  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
+  # Add text labels for vertical lines
+  geom_text(
+    data = mgmt_labels,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 0,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "brown"
+  ) +
+  geom_text(
+    data = doy365_label,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 0,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "black"
+  ) +
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
+  ylab(expression(CO[2]~fluxes~(g~C~m^{-2}~day^{-1})))+
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    axis.title.x = element_blank(),
+    #panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_continuous(
+    breaks = custom_breaks,
+    labels = custom_labels,
+    limits = c(1, 365),
+    expand = c(0, 0)
+  )+
+  scale_y_continuous(limits = c(-35, 20), breaks = seq(-35, 20, by = 5))
+
+ggsave(filename = "modeled_reco_gpp_div.png",  width = 11, height = 6, dpi = 300)
+
+###########################################
 
 
 
