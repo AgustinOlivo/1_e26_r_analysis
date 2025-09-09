@@ -241,9 +241,10 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
 # filtering out values outside of the range (mostly based on source 5 listed above and conversations with Patrick)
 
 EddyData <- mutate(EddyData_p1, # this needs to be changed based on plot
-          NEE_raw = NEE,
+          NEE_raw = NEE, # I added this to count how many initial NEE values we had in the dataset.
           NEE = ifelse(NEE < -100, NA, NEE), # added based on discussion with Patrick and Claudia.
           NEE = ifelse(NEE > 60, NA, NEE), # added based on discussion with Patrick and Claudia.
+          NEE_raw2 = NEE, # I added this to count how many initial NEE values we had in the dataset after filtering for the two brackets above.
           VPD = ifelse(VPD > 50, NA, VPD), # this was in the original code
           VPD = ifelse(VPD < 0, NA, VPD), # this was not in the original code from source 5, but REddyProc gave me a warning so I added it.
           Rg = pmin(Rg, 1200),
@@ -315,7 +316,7 @@ EddyData_initial_explo %>% # actual plot using ggplot
     subtitle = "Units: NEE (umolm-2s-1), LE (Wm-2), H (Wm-2), Ustar (ms-1), Tair (degC), RH (%), VPD (hPa), Rg (Wm-2)"
 )
 
-ggsave("basic_p3_filled.png",  width = 11, height = 7.5) # saving the figure as png to the working directory
+ggsave("basic_p1_filled.png",  width = 11, height = 7.5) # saving the figure as png to the working directory
 
 EddyData %>% 
   group_by(Year) %>% 
@@ -429,6 +430,8 @@ EProc$sSetLocationInfo(LatDeg = 43.64079, LongDeg = -80.41301, TimeZoneHour = -4
 EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA) # gap-fill now for future partitioning
 EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA) # gap-fill now for future partitioning
 EProc$sMDSGapFill('Rg', FillAll=FALSE,  minNWarnRunLength = NA) # gap-fill now for future partitioning
+EProc$sMDSGapFill('LE', FillAll=FALSE,  minNWarnRunLength = NA) # gap-fill now for future partitioning
+
 # EProc$sFillVPDFromDew() # fill longer gaps still present in VPD_f
 
 grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE) # extract name of the variable that will be used
@@ -470,13 +473,84 @@ CombinedData <- CombinedData %>%
 
   )
 
+CombinedData %>% 
+  write_xlsx(path = "conv_output_reddyproc_ec&fg.xlsx")
 
+
+# CombinedData_p12_ec = CombinedData
+# CombinedData_p34_ec = CombinedData
 CombinedData_p12_ec_fg 
-CombinedData_p34_ec_fg <- CombinedData
+CombinedData_p34_ec_fg 
+
+CombinedData_p12_ec_fg$
 
 # exporting datasets
 
 conv_factor <- 12.011 / 1e6 * 1800
+
+# comparing partitioning
+
+# gpp
+
+CombinedData_p12_ec_fg %>%
+  filter(!is.na(crop_year)) %>% 
+  ggplot(aes(x = GPP_U50_f, y = GPP_DT_U50)) +
+  geom_point(aes(fill = crop_year), shape = 21, alpha = 0.3) +
+  geom_smooth(method = "lm", color = "black") +  
+  xlab("DT-GPP (Umol m-2 s-1)")+
+  ylab("NT-GPP (Umol m-2 s-1)")+
+  theme_bw()
+
+ggsave("nt_dt_p12.png", plot = last_plot(), width = 5, height = 3.5)
+
+  
+summary(lm(data=CombinedData_p12_ec_fg, GPP_DT_U50~GPP_U50_f))
+
+
+CombinedData_p34_ec_fg %>%
+  filter(!is.na(crop_year)) %>% 
+  ggplot(aes(x = GPP_U50_f, y = GPP_DT_U50)) +
+  geom_point(aes(fill = crop_year), shape = 21, alpha = 0.3) +
+  geom_smooth(method = "lm", color = "black") +  
+  xlab("DT-GPP (Umol m-2 s-1")+
+  ylab("NT-GPP (Umol m-2 s-1")+
+  theme_bw()
+
+ggsave("nt_dt_p34.png", plot = last_plot(), width = 5, height = 3.5)
+summary(lm(data=CombinedData_p34_ec_fg, GPP_DT_U50~GPP_U50_f))
+
+
+# reco
+
+CombinedData_p12_ec_fg %>%
+  filter(!is.na(crop_year)) %>% 
+  ggplot(aes(x = Reco_U50, y = Reco_DT_U50)) +
+  geom_point(aes(fill = crop_year), shape = 21, alpha = 0.3) +
+  geom_smooth(method = "lm", color = "black") +  
+  xlab("DT-Reco (Umol m-2 s-1)")+
+  ylab("NT-Reco (Umol m-2 s-1)")+
+  theme_bw()
+
+ggsave("nt_dt_p12_reco.png", plot = last_plot(), width = 5, height = 3.5)
+
+summary(lm(data=CombinedData_p12_ec_fg, Reco_DT_U50~Reco_U50))
+
+CombinedData_p34_ec_fg %>%
+  filter(!is.na(crop_year)) %>% 
+  ggplot(aes(x = Reco_U50, y = Reco_DT_U50)) +
+  geom_point(aes(fill = crop_year), shape = 21, alpha = 0.3) +
+  geom_smooth(method = "lm", color = "black") +  
+  xlab("DT-Reco (Umol m-2 s-1")+
+  ylab("NT-Reco (Umol m-2 s-1")+
+  theme_bw()
+
+ggsave("nt_dt_p34_reco.png", plot = last_plot(), width = 5, height = 3.5)
+summary(lm(data=CombinedData_p34_ec_fg, Reco_DT_U50~Reco_U50))
+
+#  fluxes EC
+
+?geom_smooth
+
 
 #p12 
 
@@ -619,7 +693,11 @@ print(GPPAgg)
 
 # for annual aggregated NEE, the three uncertainties can be estimated. For annual aggregated GPP and Reco, only option 2 can be estimated by the code below (Sara Knox's code did not include how to estimate options 1 and 3 for annual aggregated GPP and Reco; I actually do not know if it is not possible to do it, or if the code they have up in GitHub just does not have it). For daily NEE, the code below estimates option 1 if I understood things correctly. 
 
-year_of_interest <- "23/24" # added by agustin
+# after speaking with Sarah Knox confirmed that random error associated with measurement is mostly related with NEE and in general not associated with GPP and Reco. Since GPP and Reco are not measured, there is not much point in estimating random error for them.
+
+# also after the meeting with Sarah Knox, I added to this code the lines to estimate also random error associated with daily values, following a similar approach used for annual ones.
+
+year_of_interest <- "23/24" # added by agustin, as I am running one year at a time for now.
 
 # REddyProc flags filled data with poor gap-filling by a quality flag in NEE_<uStar>_fqc > 0 but still reports the fluxes. For aggregation we recommend computing the mean including those gap-filled records, i.e. using NEE_<uStar>_f instead of NEE_orig. However, for estimating the uncertainty of the aggregated value, the the gap-filled records should not contribute to the reduction of uncertainty due to more replicates.
 
@@ -680,7 +758,9 @@ resRand
 # The aggregated value is the same as when not considering the correlations, but its uncertainty increased compared to the computation neglecting correlations.
 # Note, how we used NEE_uStar_f for computing the mean, but NEE_orig_sd instead of NEE_uStar_fsd for computing the uncertainty.
 
-# daily aggregation (this is not presented in Sara Knox's code)
+
+##### daily aggregation (this is not presented in Sara Knox's code, I brought it from the other source I considered;) ###
+# also in this section there are multiple pieces of code associated with estimation of daily GPP and Reco U* uncertainty. The code original described by Sarah Knox on how to do that for annual values, was adapted to daily estimations.
 
 # When aggregating daily respiration, the same principles hold.
 # However, when computing the number of effective observations, we recommend using the empirical autocorrelation function estimated on longer time series of residuals (autoCorr computed above) in computeEffectiveNumObs instead of estimating them from the residuals of each day.
@@ -728,7 +808,7 @@ aggDay <- results %>%
 # mean_sd_daily_gC_all <- rbind(mean_sd_daily_gC_all, aggDay)
 # mean_sd_daily_gC_all
 
-# estimate u* treshold uncertainty for daily NEE means
+# estimate u* treshold uncertainty for daily NEE means (this code was adapted from the code that Sarah Knox put together for annual estimations after I met with her and she suggested this idea)
 
 computeDailyMeanNEE <- function(ds, suffix){
   column_name <- paste0("NEE_", suffix, "_f")
@@ -1890,16 +1970,41 @@ ggsave(filename = "rproc_p3_nee.png", width = 10, height = 6, dpi = 300)
 
 # estimating the n 
 
+# main one I used
+
 CombinedData %>%
   filter(!(Year == 2018 & doy < 121)) %>% 
   filter(!(Year == 2024 & doy > 120)) %>%
-  filter((doy > 130 & doy < 300)) %>%
+  #filter((doy > 130 & doy < 300)) %>%
   group_by(crop_year) %>% 
   summarise(
-    NEE_n_raw           = sum(!is.na(NEE_raw)),
-    NEE_n_in_filt               = sum(!is.na(NEE)),
+    NEE_n_raw = sum(!is.na(NEE_raw)),
+    NEE_n_raw2 = sum(!is.na(NEE_raw2)),
+    n_NEE_uStar_orig = sum(!is.na(NEE_U50_orig)),
+    n_NEE_uStar_f = sum(!is.na(NEE_U50_f)),
+    n_NEE_uStar_f_na = sum(is.na(NEE_U50_f))
+  ) %>%
+  group_by(crop_year) %>% 
+  summarise(
+    NEE_n_raw  = sum(NEE_n_raw),
+    NEE_n_raw2  = sum(NEE_n_raw2),
+    NEE_n_after_filtering = sum(n_NEE_uStar_orig),
+    NEE_n_gap_filled = sum(n_NEE_uStar_f),
+    NEE_n_remaining_na  = sum(n_NEE_uStar_f_na )
+  )   
+
+# other estimations of total number of observations
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  #filter((doy > 130 & doy < 300)) %>%
+  group_by(crop_year) %>% 
+  summarise(
+    NEE_n_raw = sum(!is.na(NEE_raw)),
+    NEE_n_in_filt = sum(!is.na(NEE)),
     NEE_n_U50_ustar_fil    = sum(!is.na(NEE_U50_orig)),
-    n_NEE_U50_f       = sum(!is.na(NEE_U50_f)),
+    n_NEE_U50_f = sum(!is.na(NEE_U50_f)),
     n_NEE_U50_f_na    = sum(is.na(NEE_U50_f)),
     .groups = "drop"
   ) %>%
@@ -1912,67 +2017,187 @@ CombinedData %>%
   )
 
 
+# crop year p12
 
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  filter((doy > 130 & doy < 300)) %>%
-  group_by(crop_year) %>% 
-  summarise(
-    NEE_n_raw = sum(!is.na(NEE_raw)),
-    n_NEE_uStar_orig = sum(!is.na(NEE_U50_orig)),
-    n_NEE_uStar_f = sum(!is.na(NEE_U50_f)),
-    n_NEE_uStar_f_na = sum(is.na(NEE_U50_f))
-  ) %>%
-  group_by(crop_year) %>% 
-  summarise(
-    NEE_n_raw  = sum(n_NEE_raw),
-    NEE_n_after_filtering = sum(n_NEE_uStar_orig),
-    NEE_n_gap_filled = sum(n_NEE_uStar_f),
-    NEE_n_remaining_na  = sum(n_NEE_uStar_f_na )
-  )   
-
-# crop year
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
+mgmt_labels <- mgmt_dates_p1 %>%
   mutate(
-    doy_crop = case_when(
-      doy >= 121 ~ doy - 120,         # e.g., doy 121 becomes 1, 122 becomes 2, ..., 365 becomes 245
-      doy <= 120 ~ doy + (365 - 120)  # e.g., doy 1 becomes 246, 120 becomes 365
-    )
+    label = paste0("DOY = ", doy),
+    y_pos = min(c(mod_co2_p1$mod_nee, obs_co2_p1$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
+  )
+
+custom_labels_facets <- c(
+  "18/19" = "Year 1 (18-19 | Corn)",
+  "19/20" = "Year 2 (19-20 | Soybean)",
+  "20/21" = "Year 3 (20-21 | Soybean)",
+  "21/22" = "Year 4 (21-22 | Corn)",
+  "22/23" = "Year 5 (22-23 | Soybean)",
+  "23/24" = "Year 6 (23-24 | Soybean)"
+)
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>%
+  filter(!(Year == 2024 & doy > 120)) %>%
+  # create crop-day
+  mutate(doy_crop = case_when(
+    doy >= 121 ~ doy - 120,
+    doy <= 120 ~ doy + (365 - 120)
+  )) %>%
+  # keep only the additional (gap-filled) points in NEE_U50_f
+  mutate(
+    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
   ) %>%
   pivot_longer(
-    cols = c(NEE_U50_f, NEE_U50_orig),
+    cols = c(NEE_U50_orig, NEE_U50_f_plot),
     names_to = "variables",
     values_to = "value"
   ) %>%
-  mutate(variables = factor(variables, levels = c("NEE", "NEE_U50_orig", "NEE_U50_f"))) %>%
   mutate(
-    variables = recode(variables, 
-                       "NEE_U50_orig" = "u*-filtered NEE",
-                       "NEE_U50_f" = "u*-filtered & gap-filled NEE"
-    )) %>% 
-  ggplot(aes(x = doy_crop, y = value, colour = variables))+
-  geom_point(alpha = 0.4, size = 0.9)+
-  geom_vline(xintercept = 245, color = "red", linetype = "dashed")+ # DOY 365 in crop day terms
-  scale_color_manual(values = c("u*-filtered & gap-filled NEE" = "#F0E442", "u*-filtered NEE" = "#000000"))+
-  facet_wrap(crop_year~. , ncol = 2)+
+    variables = recode(variables,
+                       "NEE_U50_orig"   = "Original NEE",
+                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
+    ),
+    variables = factor(variables,
+                       levels = c("Original NEE", "Gap-filled NEE")
+    )
+  ) %>%
+  ggplot(aes(x = doy_crop, y = value, color = variables)) +
+  geom_point( size = 0.9, shape = 21) +
+  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
+                                "Original NEE" = "#999999"))+
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
   theme_bw()+
-  ylab("NEE (umolm-2s-1)")+
+  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
+  xlab("Day of year")+
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    legend.title = element_blank()
   )+
-  labs(title = "NEE dataset at multiple stages of REddyProc processing - P12",
-       #subtitle = "Red lines represent beginning and end of year, plus planting and harvest"
-  )+ 
+  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
   scale_x_continuous(
     breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
     labels = c("121", "200", "300", "365", "120")
+  )+
+  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
+  geom_text(
+    data = doy365_label,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  geom_vline(
+    data = mgmt_dates_p1,
+    aes(xintercept = doy_crop),
+    color = "brown", linetype = "dashed", size = 0.6,
+    inherit.aes = FALSE
+  ) +
+  # Add text labels for vertical lines
+  geom_text(
+    data = mgmt_labels,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "brown",
+    inherit.aes = FALSE
   )
 
-ggsave(filename = "rproc_p3_nee.png", width = 9, height = 8, dpi = 300)
+ggsave(filename = "rproc_p12_nee.png", width = 8, height = 6, dpi = 300)
+
+
+# crop year p3
+
+mgmt_labels <- mgmt_dates_p3 %>%
+  mutate(
+    label = paste0("DOY = ", doy),
+    y_pos = min(c(mod_co2_p3$mod_nee, obs_co2_p3$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
+  )
+custom_labels_facets <- c(
+  "18/19" = "Year 1 (18-19 | Corn+2-CC)",
+  "19/20" = "Year 2 (19-20 | Soybean+WW)",
+  "20/21" = "Year 3 (20-21 | WW+4-CC)",
+  "21/22" = "Year 4 (21-22 | Corn+2-CC)",
+  "22/23" = "Year 5 (22-23 | Soybean+WW)",
+  "23/24" = "Year 6 (23-24 | WW+4-CC)"
+)
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>%
+  filter(!(Year == 2024 & doy > 120)) %>%
+  # create crop-day
+  mutate(doy_crop = case_when(
+    doy >= 121 ~ doy - 120,
+    doy <= 120 ~ doy + (365 - 120)
+  )) %>%
+  # keep only the additional (gap-filled) points in NEE_U50_f
+  mutate(
+    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
+  ) %>%
+  pivot_longer(
+    cols = c(NEE_U50_orig, NEE_U50_f_plot),
+    names_to = "variables",
+    values_to = "value"
+  ) %>%
+  mutate(
+    variables = recode(variables,
+                       "NEE_U50_orig"   = "Original NEE",
+                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
+    ),
+    variables = factor(variables,
+                       levels = c("Original NEE", "Gap-filled NEE")
+    )
+  ) %>%
+  ggplot(aes(x = doy_crop, y = value, color = variables)) +
+  geom_point( size = 0.9, shape = 21) +
+  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
+                                "Original NEE" = "#999999"))+
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
+  theme_bw()+
+  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
+  xlab("Day of year")+
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )+
+  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
+  scale_x_continuous(
+    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
+    labels = c("121", "200", "300", "365", "120")
+  )+
+  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
+  geom_text(
+    data = doy365_label,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  geom_vline(
+    data = mgmt_dates_p3,
+    aes(xintercept = doy_crop),
+    color = "brown", linetype = "dashed", size = 0.6,
+    inherit.aes = FALSE
+  ) +
+  # Add text labels for vertical lines
+  geom_text(
+    data = mgmt_labels,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "brown",
+    inherit.aes = FALSE
+  )
+
+ggsave(filename = "rproc_p3_nee.png", width = 8, height = 6, dpi = 300)
 
 # calendar year
 
@@ -3052,6 +3277,163 @@ EddyData_2024_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2
 
 
 #######################################################################
+
+########### test ####################
+
+# comparing with filtered vector that agustin had
+
+# filtered vector that agustin had
+
+co2_p3_2022 <- read.table("obs_data/measured_co2/data_extraction/2025_05_01_new_data/2022/p3_tower/Filtered_vectors/co2_flux_filtered", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+co2_p3_2022 <- co2_p3_2022 %>% rename(NEE = V1)
+sum(is.na(co2_p3_2022))
+sum(!is.na(co2_p3_2022))
+n <- nrow(co2_p3_2022)
+days <- n %/% 48
+hour_seq <- rep(seq(0.5, 24, by = 0.5), length.out = n)
+time_df_2022 <- data.frame(
+  Year = rep(2022, n),
+  DoY = rep(1:days, each = 48)[1:n],
+  Hour = hour_seq
+)
+ec_22_p3 <- bind_cols(time_df_2022,co2_p3_2022)
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(
+    DOY= DoY + Hour / 24
+  ) %>% 
+  filter(DOY>121 & DOY<160)
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(DOY = round(DOY, 2))
+
+# file that jaison sent
+
+flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
+flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
+flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
+  mutate(DOY = round(as.numeric(DOY), 2))
+
+ec_22_p3 %>%
+  left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
+  filter(DOY>121 & DOY<160) %>%
+  filter(NEE>-300) %>% 
+  select(DOY, NEE, co2_flux ) %>% 
+  ggplot(aes(x = NEE, y = as.numeric(co2_flux)))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()
+
+data=ec_22_p3 %>%
+  left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
+  filter(DOY>121 & DOY<160) %>%
+  filter(NEE>-300) %>% 
+  select(DOY, NEE, co2_flux )
+
+summary(lm(data=data,as.numeric(co2_flux)~NEE))
+
+# comparing with filtered vector in the database
+
+co2_p3_2022 <- read.table("Z:/E26/database/ers4/2022/EC/EddyPro/P3_tower/Filtered_vectors/co2_flux_filtered", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+co2_p3_2022 <- co2_p3_2022 %>% rename(NEE = V1)
+sum(is.na(co2_p3_2022))
+sum(!is.na(co2_p3_2022))
+n <- nrow(co2_p3_2022)
+days <- n %/% 48
+hour_seq <- rep(seq(0.5, 24, by = 0.5), length.out = n)
+time_df_2022 <- data.frame(
+  Year = rep(2022, n),
+  DoY = rep(1:days, each = 48)[1:n],
+  Hour = hour_seq
+)
+ec_22_p3 <- bind_cols(time_df_2022,co2_p3_2022)
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(
+    DOY= DoY + Hour / 24
+  ) %>% 
+  filter(DOY>121 & DOY<160)
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(DOY = round(DOY, 2))
+
+# file that jaison sent
+
+flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
+flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
+flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
+  mutate(DOY = round(as.numeric(DOY), 2))
+
+ec_22_p3 %>%
+  left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
+  filter(DOY>121 & DOY<160) %>%
+  filter(NEE>-300) %>% 
+  select(DOY, NEE, co2_flux ) %>% 
+  ggplot(aes(x = NEE, y = as.numeric(co2_flux)))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()
+
+# comparing with raw EddyPro output from database
+
+# file in database
+
+flux_p3_05_2025_co2_eddypro <- read.csv("Z:/E26/database/ers4/2022/EC/EddyPro/P3_tower/EddyProOutputs/Full_output/eddypro_Plot3_May_June_2022_full_output_2024-04-24T165437_adv.csv", skip = 1, header = TRUE)
+flux_p3_05_2025_co2_eddypro = flux_p3_05_2025_co2_eddypro[-1,]
+flux_p3_05_2025_co2_eddypro$DOY = as.numeric(flux_p3_05_2025_co2_eddypro$DOY)
+flux_p3_05_2025_co2_eddypro <- flux_p3_05_2025_co2_eddypro %>%
+  mutate(DOY = round(as.numeric(DOY), 4))
+flux_p3_05_2025_co2_eddypro = flux_p3_05_2025_co2_eddypro %>% 
+  mutate(
+    co2_flux2 = co2_flux
+  ) %>%   
+  select(DOY, co2_flux2)
+
+# file that jaison sent
+
+flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
+flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
+flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
+  mutate(DOY = round(as.numeric(DOY), 4))
+
+flux_p3_05_2025_co2 %>%
+  left_join(flux_p3_05_2025_co2_eddypro, by="DOY") %>% 
+  filter(DOY>121 & DOY<160) %>%
+  select(DOY, co2_flux, co2_flux2 ) %>%
+  filter(!co2_flux<abs(1000)) %>% 
+  ggplot(aes(x = as.numeric(co2_flux), y = as.numeric(co2_flux2)))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()
+
+
+# comparing with filtered vector
+
+co2_p3_2022 <- read.table("Z:/E26/database/ers4/2022/EC/EddyPro/P3_tower/Filtered_vectors/co2_flux_filtered", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+co2_p3_2022 <- co2_p3_2022 %>% rename(NEE = V1)
+sum(is.na(co2_p3_2022))
+sum(!is.na(co2_p3_2022))
+
+# create time columns (assuming 48 half-hourly measurements per day)
+n <- nrow(co2_p3_2022)
+days <- n %/% 48
+hour_seq <- rep(seq(0.5, 24, by = 0.5), length.out = n)
+
+time_df_2022 <- data.frame(
+  Year = rep(2022, n),
+  DoY = rep(1:days, each = 48)[1:n],
+  Hour = hour_seq
+)
+
+ec_22_p3 <- bind_cols(time_df_2022,co2_p3_2022)
+
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(
+    DOY= DoY + Hour / 24
+  ) %>% 
+  filter(DOY>121 & DOY<160)
+
+ec_22_p3 <- ec_22_p3 %>%
+  mutate(DOY = round(DOY, 2))
 
 #######################################################################
 ####################### old ###########################################

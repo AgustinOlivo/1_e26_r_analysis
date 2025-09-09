@@ -38,7 +38,8 @@ units_row <- tibble(
   Tair = "degC", 
   RH = "%", 
   VPD = "hPa", 
-  Rg = "Wm-2"
+  Rg = "Wm-2",
+  NR = "Wm-2"
 )
 
 # read raw data
@@ -239,7 +240,12 @@ sum(!is.na(vpd_p12_2019))
 
 # exctracting from a different source (old files)
 rg_p12_2019_raw <- read.table("obs_data/measured_co2/data_extraction/rg/p12/CM3Up_Avg_2019_p12", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+sum(is.na(rg_p12_2019_raw))
+sum(!is.na(rg_p12_2019_raw))
+
 rg_p3_2019_raw <- read.table("obs_data/measured_co2/data_extraction/rg/p3/CM3Up_Avg_2019_p3", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+sum(is.na(rg_p3_2019_raw))
+sum(!is.na(rg_p3_2019_raw))
 
 rg_2019 <- rg_p3_2019_raw %>%
   mutate(across(everything(), ~ coalesce(., rg_p12_2019_raw[[cur_column()]])))
@@ -260,12 +266,67 @@ rg_2019 %>%
 sum(is.na(rg_2019$Rg))
 sum(!is.na(rg_2019$Rg))
 
+# importing net radiation
+
+nr_p12_2019 <- read.table("Z:/E26/database/ers4/2019/Net_Radiation/P12_tower/Raw_vectors/Net_Rad", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+nr_p12_2019 <- nr_p12_2019 %>% rename(NR = V1)
+sum(is.na(nr_p12_2019))
+sum(!is.na(nr_p12_2019))
+
 # combine all into one data frame
-ec_19_p12 <- bind_cols(time_df_2019,co2_p12_2019,le_p12_2019,h_p12_2019,ustar_p12_2019,tair_p12_2019,rh_p12_2019,vpd_p12_2019) %>% 
+ec_19_p12 <- bind_cols(time_df_2019,co2_p12_2019,le_p12_2019,h_p12_2019,ustar_p12_2019,tair_p12_2019,rh_p12_2019,vpd_p12_2019, nr_p12_2019) %>% 
   left_join(rg_2019, by = c("DoY", "Hour"))
 ec_19_p12 <- rbind(units_row, ec_19_p12)
 
 write.table(ec_19_p12, file = "ec_19_p12", sep = "\t", row.names = FALSE, quote = FALSE)
+
+
+ec_19_p12 %>%
+  group_by(Hour) %>% 
+  summarise(
+    NR = mean(as.numeric(NR), na.rm = TRUE),
+    LE = mean(as.numeric(LE), na.rm = TRUE),
+    H = mean(as.numeric(H), na.rm = TRUE)
+  ) %>% 
+  ggplot()+
+  #geom_point(aes(x = as.numeric(Hour), y = as.numeric(Rg)), shape=21, fill="red", alpha=0.5)+
+  # geom_point(aes(x = as.numeric(Hour), y = as.numeric(NR)), shape=21, fill="blue", alpha=0.5)+
+  # geom_point(aes(x = as.numeric(Hour), y = as.numeric(LE)), shape=21, fill="darkgreen", alpha=0.5)+
+  # geom_point(aes(x = as.numeric(Hour), y = as.numeric(H)), shape=21, fill="orange", alpha=0.5)+
+  
+  geom_line(aes(x = as.numeric(Hour), y = as.numeric(NR)), color="blue", alpha=0.5)+
+  geom_line(aes(x = as.numeric(Hour), y = as.numeric(LE)), color="darkgreen", alpha=0.5)+
+  geom_line(aes(x = as.numeric(Hour), y = as.numeric(H)), color="orange", alpha=0.5)+
+  
+  geom_vline(xintercept = 12)+
+  theme_bw()
+
+
+ec_19_p12 %>%
+  #group_by(Hour) %>% 
+  mutate(
+    NR = as.numeric(NR),
+    LE = as.numeric(LE),
+    H = as.numeric(H),
+    le_h = LE + H,
+    le_h = as.numeric(le_h)
+  ) %>% 
+  ggplot(aes(x = as.numeric(le_h), y = as.numeric(NR)))+
+  geom_point(aes(x = as.numeric(le_h), y = as.numeric(NR)), shape=21, fill="red", alpha=0.5)+
+  geom_smooth(method="lm")+
+   theme_bw()
+
+data_eli = ec_19_p12 %>%
+  #group_by(Hour) %>% 
+  mutate(
+    NR = as.numeric(NR),
+    LE = as.numeric(LE),
+    H = as.numeric(H),
+    le_h = LE + H,
+    le_h = as.numeric(le_h)
+  )
+
+summary(lm(data = data_eli, le_h ~ NR))
 
 # 2020
 
