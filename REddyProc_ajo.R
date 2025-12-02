@@ -117,6 +117,19 @@ EddyData_2024_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2
 
 EddyData_p1 <- rbind(EddyData_2018_p3, EddyData_2018_p1, EddyData_2019_p1, EddyData_2020_p1, EddyData_2021_p1, EddyData_2022_p1, EddyData_2023_p1,EddyData_2024_p1) 
 
+# EddyData_p1 <- EddyData_p1 %>%
+#   # filter(!c(Year == 2018 & DoY < 121)) %>%
+#   # filter(!c(Year == 2024 & DoY > 120)) %>%
+#   mutate(
+#     crop_year = ifelse(Year == 2018 & DoY > 120 | Year == 2019 & DoY < 121, "18/19", 
+#                        ifelse(Year == 2019 & DoY > 120 | Year == 2020 & DoY < 121, "19/20",
+#                               ifelse(Year == 2020 & DoY > 120 | Year == 2021 & DoY < 121, "20/21",
+#                                      ifelse(Year == 2021 & DoY > 120 | Year == 2022 & DoY < 121, "21/22",
+#                                             ifelse(Year == 2022 & DoY > 120 | Year == 2023 & DoY < 121, "22/23",
+#                                                    ifelse(Year == 2023 & DoY > 120 | Year == 2024 & DoY < 121, "23/24", NA))))))
+#     
+#   )
+
 # co2 fluxes are in umolm-2s-1
 
 # definition of u* seasons for each plot (periods of time for which u* will be calculated separately); this will then be used for u* filtering of the data 
@@ -476,15 +489,61 @@ CombinedData <- CombinedData %>%
 CombinedData %>% 
   write_xlsx(path = "conv_output_reddyproc_ec&fg.xlsx")
 
+# important variables in the CombineData dataset
 
-# CombinedData_p12_ec = CombinedData
-# CombinedData_p34_ec = CombinedData
-CombinedData_p12_ec_fg 
-CombinedData_p34_ec_fg 
+# a good description of the variables can be found here: https://www.bgc-jena.mpg.de/5624929/Output-Format
 
-CombinedData_p12_ec_fg$
+# NEE = original NEE value (raw halfhourly data)
+# Ustar = original Ustar value
+# Ustar_U50_Tresh = median for the distribution of Ustar tresholds used for each season
+# NEE_U50_orig = NEE value after ustar filtering considering the median for the distribution of Ustar tresholds used for each season
+# NEE_U50_f = filled NEE value after ustar filtering considering the median for the distribution of Ustar tresholds used for each season
 
-# exporting datasets
+# after partitioning
+
+# GPP_U50_f = gpp value obtained with night-time partitioning, considering the median of the distribution of u* threshold ; nightime method
+# Reco_U50 = reco value obtained with night-time partitioning, considering the median of the distribution of u* threshold ; nightime method
+# GPP_DT_U50 = GPP value obtained with day-time partitioning, considering the median of the distribution of u* threshold : daytime method
+# Reco_DT_U50 = Reco value obtained with day-time partitioning, considering the median of the distribution of u* threshold : daytime method
+# NEE_U50_f = NEE value after filtering and gap-filling, considering the median of the distribution of u* threshold for different seasons
+
+# GPP_uStar_f : nightime method.
+# Reco_uStar : nightime method.
+
+# GPP_DT_uStar : daytime method.
+# Reco_DT_uStar : daytime method.
+
+# final values to use:
+  
+    # these are the variables that Sara Knox's code uses for final output reporting. Checking the difference among multiple output variables from REddyProc for NEE, it looks like in general there is not much difference between NEE_U50_f and NEE_uStart_f; I was initially thinking of using NEE_U50_f , but then I saw in Sara Knox’s code that she uses NEE_U50_f for some of her outputs. Annual aggregated values do not seem to show large differences between those two variables.Annual aggregated values do not seem to show large differences between those two variables.
+    
+    # NEE_uStar_f
+    
+    # GPP_uStar_f : nightime partitioning method.
+    # Reco_uStar : nightime partitioning method.
+    
+    # GPP_DT_uStar : daytime partitioning method.
+    # Reco_DT_uStar : daytime partitioning method.
+    
+# other information/variable names
+
+# VAR_orig - Original values used for gap filling 
+# VAR_f - Original values and gaps filled with mean of selected datapoints (condition depending on gap filling method) 
+# VAR_fqc - Quality flag assigned depending on gap filling method and window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable) 
+# VAR_fall - All values considered as gaps (for uncertainty estimates) 
+# VAR_fall_qc - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
+# VAR_fnum - Number of datapoints used for gap-filling 
+# VAR_fsd - Standard deviation of datapoints used for gap filling (uncertainty) 
+# VAR_fmeth - Method used for gap filling (1 = similar meteo condition (sFillLUT with Rg, VPD, Tair), 2 = similar meteo (sFillLUT with Rg only), 3 = mean diurnal course (sFillMDC)) 
+# VAR_fwin - Full window length used for gap filling
+
+
+#######################################################################
+
+#######################################################################
+#################### graphs ###########################################
+
+# graphing 
 
 conv_factor <- 12.011 / 1e6 * 1800
 
@@ -503,7 +562,7 @@ CombinedData_p12_ec_fg %>%
 
 ggsave("nt_dt_p12.png", plot = last_plot(), width = 5, height = 3.5)
 
-  
+
 summary(lm(data=CombinedData_p12_ec_fg, GPP_DT_U50~GPP_U50_f))
 
 
@@ -554,7 +613,7 @@ summary(lm(data=CombinedData_p34_ec_fg, Reco_DT_U50~Reco_U50))
 
 #p12 
 
-CombinedData_p12_ec_fg %>%
+CombinedData_p12_ec_fg_20_21 %>%
   mutate(
     NEE_gC = NEE_U50_f * conv_factor,
     
@@ -564,7 +623,7 @@ CombinedData_p12_ec_fg %>%
     GPP_DT_U50_gC = GPP_DT_U50 * conv_factor,  # Daytime method
     Reco_DT_U50_gC = Reco_DT_U50 * conv_factor, # Daytime method
     year = Year
-    ) %>%
+  ) %>%
   group_by(crop_year, doy, Year) %>%
   summarise(
     nee_g_c_m2_day = sum(NEE_gC, na.rm = TRUE),
@@ -574,7 +633,7 @@ CombinedData_p12_ec_fg %>%
     reco_dt_g_c_m2_day = sum(Reco_DT_U50_gC, na.rm = TRUE),
     .groups = "drop"
   ) %>%
-  write_xlsx(path = "obs_co2_p12.xlsx")
+  write_xlsx(path = "obs_co2_p12_20_21.xlsx")
 
 #p34
 
@@ -601,53 +660,1143 @@ CombinedData_p34_ec_fg %>%
   ) %>%
   write_xlsx(path = "obs_co2_p34.xlsx")
 
-# important variables in the CombineData dataset
+# plot for nee only (halfhourly) - EC + FG data color-coded
 
-# a good description of the variables can be found here: https://www.bgc-jena.mpg.de/5624929/Output-Format
+CombinedData %>% 
+  ggplot(aes(x = DoY, y = NEE, color = source))+
+  geom_point(alpha = 0.3, size = 1)+
+  scale_color_manual(values = c("#0072B2", "#009E73"))+
+  facet_wrap(Year~., ncol=2)+
+  theme_bw()+
+  theme(
+    legend.position = "bottom"
+  )+
+  geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  labs(title = "REddyProc input data E26 - Plot3 -  NEE (Half-hourly)",
+       subtitle = "Red lines represent beginning and end of year, plus planting and harvest")+
+  ylab("NEE (umolm-2s-1)")
 
-# NEE = original NEE value (raw halfhourly data)
-# Ustar = original Ustar value
-# Ustar_U50_Tresh = median for the distribution of Ustar tresholds used for each season
-# NEE_U50_orig = NEE value after ustar filtering considering the median for the distribution of Ustar tresholds used for each season
-# NEE_U50_f = filled NEE value after ustar filtering considering the median for the distribution of Ustar tresholds used for each season
+ggsave("basic_nee_halfhourly_p3_filled.png", width = 9, height = 8) # saving the figure as png to the working directory
 
-# after partitioning
+# some final raw variables
 
-# GPP_U50_f = gpp value obtained with night-time partitioning, considering the median of the distribution of u* threshold ; nightime method
-# Reco_U50 = reco value obtained with night-time partitioning, considering the median of the distribution of u* threshold ; nightime method
-# GPP_DT_U50 = GPP value obtained with day-time partitioning, considering the median of the distribution of u* threshold : daytime method
-# Reco_DT_U50 = Reco value obtained with day-time partitioning, considering the median of the distribution of u* threshold : daytime method
-# NEE_U50_f = NEE value after filtering and gap-filling, considering the median of the distribution of u* threshold for different seasons
+EddyData_basic_variables <- CombinedData %>% # converting data to long format (needed for plotting)
+  pivot_longer(
+    cols = c(LE, H, Ustar,Tair_f, RH, VPD_f, Rg_f, NEE_uStar_f),
+    names_to = "variables",
+    values_to = "values"
+  )
+summary_stats <- EddyData_basic_variables %>%
+  group_by(variables, Year) %>%
+  summarize(
+    mean_val = mean(values, na.rm = TRUE),
+    sd_val = sd(values, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-# GPP_uStar_f : nightime method.
-# Reco_uStar : nightime method.
+mgmt_dates_p1  <- seasonStarts # bringing in the management dates to plot them as vertical lines in the graph
+colnames(mgmt_dates_p1) <- c("doy", "Year")
 
-# GPP_DT_uStar : daytime method.
-# Reco_DT_uStar : daytime method.
+EddyData_basic_variables %>% # actual plot using ggplot
+  #filter(variables == "Rg") %>% 
+  filter(Year == 2023) %>%
+  ggplot(aes(x = DoY, y = values, colour = variables)) +
+  geom_point(alpha = 0.5, size = 1) +
+  facet_grid(vars(variables), vars(Year), scales = "free_y") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  #geom_vline(data = mgmt_dates_p1, aes(xintercept =doy) , color = "red", linetype = "dashed") +
+  geom_text(data = filter(summary_stats, Year == 2023),
+            aes(x = Inf, y = Inf,
+                label = paste0("Mean: ", round(mean_val, 1), "\nSD: ", round(sd_val, 1))),
+            hjust = 1.1, vjust = 1.0,
+            inherit.aes = FALSE,
+            size = 3)+
+  labs(
+    title = "REddyProc input data E26 - Plot1 (Half-hourly data)",
+    subtitle = "Units: NEE (umolm-2s-1), LE (Wm-2), H (Wm-2), Ustar (ms-1), Tair (degC), RH (%), VPD (hPa), Rg (Wm-2)"
+  )
 
-# final values to use:
+
+# halfhourly observations
+
+# crop year (doy 121 to doy 120)
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  mutate(
+    doy_crop = case_when(
+      doy >= 121 ~ doy - 120,         # e.g., doy 121 becomes 1, 122 becomes 2, ..., 365 becomes 245
+      doy <= 120 ~ doy + (365 - 120)  # e.g., doy 1 becomes 246, 120 becomes 365
+    )
+  ) %>%
+  pivot_longer(
+    cols = c(NEE, NEE_uStar_f, NEE_uStar_orig),
+    names_to = "variables",
+    values_to = "value"
+  ) %>%
+  mutate(variables = factor(variables, levels = c("NEE", "NEE_uStar_orig", "NEE_uStar_f"))) %>%
+  mutate(
+    variables = recode(variables, 
+                       "NEE_uStar_f" = "u*-filtered & gap-filled NEE",
+                       "NEE_uStar_orig" = "u*-filtered NEE",
+                       "NEE" = "NEE after initial filtering",
+    )) %>% 
+  ggplot(aes(x = doy_crop, y = value, colour = variables))+
+  geom_point(alpha = 0.4, size = 0.9)+
+  geom_vline(xintercept = 245, color = "red", linetype = "dashed")+ # DOY 365 in crop day terms
+  facet_grid(vars(variables), vars(crop_year), )+
+  theme_bw()+
+  ylab("NEE (umolm-2s-1)")+
+  theme(
+    legend.position = "none"
+  )+
+  labs(title = "NEE dataset at multiple stages of REddyProc processing - P34",
+       #subtitle = "Red lines represent beginning and end of year, plus planting and harvest"
+  )+ 
+  scale_x_continuous(
+    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
+    labels = c("121", "200", "300", "365", "120")
+  )
+
+ggsave(filename = "rproc_p3_nee.png", width = 10, height = 6, dpi = 300)
+
+# estimating the n 
+
+# main one I used
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  #filter((doy > 130 & doy < 300)) %>%
+  group_by(crop_year) %>% 
+  summarise(
+    NEE_n_raw = sum(!is.na(NEE_raw)),
+    NEE_n_raw2 = sum(!is.na(NEE_raw2)),
+    n_NEE_uStar_orig = sum(!is.na(NEE_U50_orig)),
+    n_NEE_uStar_f = sum(!is.na(NEE_U50_f)),
+    n_NEE_uStar_f_na = sum(is.na(NEE_U50_f))
+  ) %>%
+  group_by(crop_year) %>% 
+  summarise(
+    NEE_n_raw  = sum(NEE_n_raw),
+    NEE_n_raw2  = sum(NEE_n_raw2),
+    NEE_n_after_filtering = sum(n_NEE_uStar_orig),
+    NEE_n_gap_filled = sum(n_NEE_uStar_f),
+    NEE_n_remaining_na  = sum(n_NEE_uStar_f_na )
+  )   
+
+# other estimations of total number of observations
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  #filter((doy > 130 & doy < 300)) %>%
+  group_by(crop_year) %>% 
+  summarise(
+    NEE_n_raw = sum(!is.na(NEE_raw)),
+    NEE_n_in_filt = sum(!is.na(NEE)),
+    NEE_n_U50_ustar_fil    = sum(!is.na(NEE_U50_orig)),
+    n_NEE_U50_f = sum(!is.na(NEE_U50_f)),
+    n_NEE_U50_f_na    = sum(is.na(NEE_U50_f)),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    prop_raw_vs      = NEE_n_raw / n_NEE_U50_f*100,
+    prop_nee_in_filt      = NEE_n_in_filt / n_NEE_U50_f*100,
+    prop_U50_ustar_fil    = NEE_n_U50_ustar_fil / n_NEE_U50_f*100,
+    prop_NEE_U50_f = n_NEE_U50_f / n_NEE_U50_f*100,
+    prop_remaining_na_vs_final = n_NEE_U50_f_na / n_NEE_U50_f*100
+  )
+
+# crop year p12
+
+mgmt_labels <- mgmt_dates_p1 %>%
+  mutate(
+    label = paste0("DOY = ", doy),
+    y_pos = min(c(mod_co2_p1$mod_nee, obs_co2_p1$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
+  )
+
+custom_labels_facets <- c(
+  "18/19" = "Year 1 (Corn)",
+  "19/20" = "Year 2 (Soybean)",
+  "20/21" = "Year 3 (Soybean)",
+  "21/22" = "Year 4 (Corn)",
+  "22/23" = "Year 5 (Soybean)",
+  "23/24" = "Year 6 (Soybean)"
+)
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>%
+  filter(!(Year == 2024 & doy > 120)) %>%
+  # create crop-day
+  mutate(doy_crop = case_when(
+    doy >= 121 ~ doy - 120,
+    doy <= 120 ~ doy + (365 - 120)
+  )) %>%
+  # keep only the additional (gap-filled) points in NEE_U50_f
+  mutate(
+    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
+  ) %>%
+  pivot_longer(
+    cols = c(NEE_U50_orig, NEE_U50_f_plot),
+    names_to = "variables",
+    values_to = "value"
+  ) %>%
+  mutate(
+    variables = recode(variables,
+                       "NEE_U50_orig"   = "Original NEE",
+                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
+    ),
+    variables = factor(variables,
+                       levels = c("Original NEE", "Gap-filled NEE")
+    )
+  ) %>%
+  ggplot(aes(x = doy_crop, y = value, color = variables)) +
+  geom_point( size = 0.9, shape = 21) +
+  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
+                                "Original NEE" = "#999999"))+
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
+  theme_bw()+
+  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
+  xlab("Day of year")+
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )+
+  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
+  scale_x_continuous(
+    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
+    labels = c("121", "200", "300", "365", "120")
+  )+
+  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
+  geom_text(
+    data = doy365_label,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  geom_vline(
+    data = mgmt_dates_p1,
+    aes(xintercept = doy_crop),
+    color = "brown", linetype = "dashed", size = 0.6,
+    inherit.aes = FALSE
+  ) +
+  # Add text labels for vertical lines
+  geom_text(
+    data = mgmt_labels,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "brown",
+    inherit.aes = FALSE
+  )
+
+ggsave(filename = "rproc_p12_nee.png", width = 8, height = 6, dpi = 300)
+
+
+# crop year p3
+
+mgmt_labels <- mgmt_dates_p3 %>%
+  mutate(
+    label = paste0("DOY = ", doy),
+    y_pos = min(c(mod_co2_p3$mod_nee, obs_co2_p3$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
+  )
+custom_labels_facets <- c(
+  "18/19" = "Year 1 (18-19 | Corn+2-CC)",
+  "19/20" = "Year 2 (19-20 | Soybean+WW)",
+  "20/21" = "Year 3 (20-21 | WW+4-CC)",
+  "21/22" = "Year 4 (21-22 | Corn+2-CC)",
+  "22/23" = "Year 5 (22-23 | Soybean+WW)",
+  "23/24" = "Year 6 (23-24 | WW+4-CC)"
+)
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>%
+  filter(!(Year == 2024 & doy > 120)) %>%
+  # create crop-day
+  mutate(doy_crop = case_when(
+    doy >= 121 ~ doy - 120,
+    doy <= 120 ~ doy + (365 - 120)
+  )) %>%
+  # keep only the additional (gap-filled) points in NEE_U50_f
+  mutate(
+    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
+  ) %>%
+  pivot_longer(
+    cols = c(NEE_U50_orig, NEE_U50_f_plot),
+    names_to = "variables",
+    values_to = "value"
+  ) %>%
+  mutate(
+    variables = recode(variables,
+                       "NEE_U50_orig"   = "Original NEE",
+                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
+    ),
+    variables = factor(variables,
+                       levels = c("Original NEE", "Gap-filled NEE")
+    )
+  ) %>%
+  ggplot(aes(x = doy_crop, y = value, color = variables)) +
+  geom_point( size = 0.9, shape = 21) +
+  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
+                                "Original NEE" = "#999999"))+
+  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
+  theme_bw()+
+  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
+  xlab("Day of year")+
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )+
+  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
+  scale_x_continuous(
+    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
+    labels = c("121", "200", "300", "365", "120")
+  )+
+  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
+  geom_text(
+    data = doy365_label,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  geom_vline(
+    data = mgmt_dates_p3,
+    aes(xintercept = doy_crop),
+    color = "brown", linetype = "dashed", size = 0.6,
+    inherit.aes = FALSE
+  ) +
+  # Add text labels for vertical lines
+  geom_text(
+    data = mgmt_labels,
+    aes(x = doy_crop, y = -30, label = label),
+    angle = 90,
+    vjust = 1.4,  # Adjust vertical justification (above the line)
+    hjust = 1,     # Align text so it’s right over the line
+    size = 3.0,
+    color = "brown",
+    inherit.aes = FALSE
+  )
+
+ggsave(filename = "rproc_p3_nee.png", width = 8, height = 6, dpi = 300)
+
+# calendar year
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  # pivot_longer(
+  #   cols = c(NEE, NEE_uStar_f, NEE_uStar_orig),
+  #   names_to = "variables",
+  #   values_to = "value"
+  # ) %>%
+  pivot_longer(
+    cols = c(NEE_uStar_f, NEE_uStar_orig),
+    names_to = "variables",
+    values_to = "value"
+  ) %>%
+  mutate(variables = factor(variables, levels = c("NEE_uStar_orig", "NEE_uStar_f"))) %>%
+  mutate(
+    variables = recode(variables, 
+                       "NEE_uStar_f" = "u*-filtered & gap-filled NEE",
+                       "NEE_uStar_orig" = "u*-filtered NEE",
+                       #"NEE" = "NEE after initial filtering",
+    )) %>% 
+  ggplot(aes(x = doy, y = value, colour = variables))+
+  geom_line(alpha = 0.4, size = 0.9)+
+  geom_vline(xintercept = 121, color = "red", linetype = "dashed")+
+  facet_wrap(crop_year~., ncol = 2)+
+  scale_colour_manual(values = c("black", "yellow"))+
+  #facet_grid(vars(variables), vars(Year))+
+  theme_bw()+
+  ylab("NEE (umolm-2s-1)")+
+  theme(
+    legend.position = "right"
+  )+
+  labs(title = "Halfhourly NEE dataset at multiple stages of REddyProc processing - P12",
+       #subtitle = "Red lines represent beginning and end of year, plus planting and harvest"
+  )
+
+ggsave(filename = "rproc_p1_nee_filled_vs_nofilled_new.png", width = 10, height = 6, dpi = 300)
+
+# annual values
+
+# Conversion factor
+conv_factor <- 12.011 / 1e6 * 1800
+
+# --- Nighttime method ---
+night_df <- CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  mutate(
+    NEE_gC = NEE_U50_f * conv_factor,
+    GPP_gC = GPP_U50_f * conv_factor,
+    Reco_gC = Reco_U50 * conv_factor
+  ) %>%
+  # mutate(
+  #   NEE_gC = NEE_uStar_f * conv_factor,
+  #   GPP_gC = GPP_uStar_f * conv_factor,
+  #   Reco_gC = Reco_uStar * conv_factor
+  # ) %>%
+  group_by(crop_year) %>%
+  summarise(
+    method = "Nighttime",
+    NEE = sum(NEE_gC, na.rm = TRUE),
+    GPP = -sum(GPP_gC, na.rm = TRUE),
+    Reco = sum(Reco_gC, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = c(NEE, GPP, Reco), names_to = "variable", values_to = "value")
+
+# --- Daytime method ---
+day_df <- CombinedData %>%
+  filter(!(Year == 2018 & doy < 121)) %>% 
+  filter(!(Year == 2024 & doy > 120)) %>%
+  mutate(
+    GPP_gC = GPP_DT_U50 * conv_factor,
+    Reco_gC = Reco_DT_U50 * conv_factor,
+    NEE_gC = -GPP_gC + Reco_gC
+  ) %>%
+  # mutate(
+  #   GPP_gC = GPP_DT_uStar * conv_factor,
+  #   Reco_gC = Reco_DT_uStar * conv_factor,
+  #   NEE_gC = -GPP_gC + Reco_gC
+  # ) %>%
+  group_by(crop_year) %>%
+  summarise(
+    method = "Daytime",
+    NEE = sum(NEE_gC, na.rm = TRUE),
+    GPP = -sum(GPP_gC, na.rm = TRUE),
+    Reco = sum(Reco_gC, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = c(NEE, GPP, Reco), names_to = "variable", values_to = "value")
+
+# --- Combine and format ---
+combined_df <- bind_rows(night_df, day_df) %>%
+  mutate(
+    variable = factor(variable, levels = c("GPP", "Reco", "NEE")),
+    method = factor(method, levels = c("Nighttime", "Daytime")),
+    fill_color = case_when(
+      variable %in% c("GPP", "Reco", "NEE") & method == "Nighttime" ~ "#0072B2",
+      variable %in% c("GPP", "Reco", "NEE") & method == "Daytime" ~ "#E69F00"
+    ),
+    pattern = case_when(
+      variable == "Reco" ~ "stripe",
+      variable == "NEE"  ~ "circle",
+      TRUE ~ "none"
+    ),
+    label_vjust = case_when(
+      variable == "GPP" ~ 0.5,
+      variable == "Reco" ~ 0.4,
+      variable == "NEE" ~ 0.5,
+    ),
+    label_color = if_else(variable == "GPP", "white", "black")
+  )
+
+# --- Plot ---
+ggplot(combined_df, aes(x = variable, y = value, fill = fill_color, pattern = pattern)) +
+  geom_col_pattern(
+    position = position_dodge2(preserve = "single"),
+    colour = "black",               # Black border for the bars
+    pattern_fill = "white",         # White-filled pattern shapes
+    pattern_colour = NA,            # Remove black outline from patterns
+    pattern_angle = 45,
+    pattern_density = 0.4,         # Lower density = fewer, bigger patterns
+    pattern_spacing = 0.05,          # Higher spacing = more room between patterns (bigger visible shapes)
+    pattern_key_scale_factor = 0.1
+  )+
+  scale_fill_identity() +
+  scale_pattern_identity() +
+  geom_text(
+    aes(label = round(value, 0), vjust = label_vjust, colour = label_color, hjust = -0.1),
+    position = position_dodge2(width = 0.9),
+    angle = 90,
+    show.legend = FALSE
+  ) +
+  scale_y_continuous(limits = c(-1800, 1800), breaks = seq(-1800, 1800, by = 200))+
+  scale_color_identity() +
+  facet_wrap(~ crop_year, nrow = 1) +
+  ylab("C fluxes (g C m⁻² year⁻¹)") +
+  theme_bw() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 90, vjust = 0.5)
+  )
+
+ggsave("annual_sum_p3.png", width = 10, height = 5)
+
+
+# incorporating error
+
+sd_long <- mean_sdAnnual_gC_all %>%
+  mutate(
+    crop_year = crop_year
+  ) %>%
+  select(crop_year,
+         sd_GPP_Ustar_NT, sd_Reco_Ustar_NT,
+         sd_GPP_Ustar_DT, sd_Reco_Ustar_DT,
+         sdComb) %>%
+  pivot_longer(
+    cols = -crop_year,
+    names_to = "var_method",
+    values_to = "sd"
+  ) %>%
+  mutate(
+    variable = case_when(
+      str_detect(var_method, "GPP") ~ "GPP",
+      str_detect(var_method, "Reco") ~ "Reco",
+      str_detect(var_method, "sdComb") ~ "NEE"
+    ),
+    method = case_when(
+      str_detect(var_method, "_NT") ~ "Nighttime",
+      str_detect(var_method, "_DT") ~ "Daytime",
+      var_method == "sdComb" ~ "Nighttime"  # NEE sdComb applies to nighttime only
+    )
+  ) %>%
+  select(crop_year, variable, method, sd)
+
+plot_df <- combined_df %>%
+  left_join(sd_long, by = c("crop_year", "variable", "method")) %>%
+  mutate(
+    ymin = value - sd,
+    ymax = value + sd
+  )
+plot_df$variable <- factor(plot_df$variable, levels = c("GPP", "Reco", "NEE"))
+
+
+# --- Plot ---
+ggplot(plot_df, aes(x = variable, y = value, fill = fill_color, pattern = pattern)) +
+  geom_col_pattern(
+    position = position_dodge2(width = 0.9),
+    colour = "black",               # Black border for the bars
+    pattern_fill = "white",         # White-filled pattern shapes
+    pattern_colour = NA,            # Remove black outline from patterns
+    pattern_angle = 45,
+    pattern_density = 0.4,         # Lower density = fewer, bigger patterns
+    pattern_spacing = 0.05,          # Higher spacing = more room between patterns (bigger visible shapes)
+    pattern_key_scale_factor = 0.1
+  )+
+  geom_errorbar(
+    aes(ymin = ymin, ymax = ymax),
+    position = position_dodge2(width = 0.9),
+    width = 0.9,
+    
+    color = "black",
+    na.rm = TRUE
+  )+
+  scale_fill_identity() +
+  scale_pattern_identity() +
+  geom_text(
+    aes(label = round(value, 0), vjust = label_vjust, colour = label_color, hjust = -0.5),
+    position = position_dodge2(width = 0.9),
+    angle = 90,
+    show.legend = FALSE
+  ) +
+  scale_y_continuous(limits = c(-1800, 1850), breaks = seq(-1800, 1800, by = 200))+
+  scale_color_identity() +
+  facet_wrap(~ crop_year, nrow = 1) +
+  ylab("NEE (g C m⁻² year⁻¹)") +
+  theme_bw() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 90, vjust = 0.5)
+  )+
+  labs(title = "Annual fluxes P1/2",
+       subtitle = "Error bars = SD (NEE = random + u*, GPP = u*, Reco = u*)")
+
+
+ggsave("annual_sum_p1.png", width = 10, height = 6)
+
+
+# night-time partitioning vs day-time partitioning - cumulative graph - crop year
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121), !(Year == 2024 & doy > 120)) %>%
+  group_by(crop_year, DoY) %>%
+  summarise(
+    NEE_f = sum(NEE_U50_f * conv_factor),           # convert to g C m-2 d-1
+    GPP_f = -sum(GPP_U50_f * conv_factor),          # nighttime method
+    Reco = sum(Reco_U50 * conv_factor),             # nighttime method
+    GPP_DT = -sum(GPP_DT_U50 * conv_factor),        # daytime method
+    Reco_DT = sum(Reco_DT_U50 * conv_factor),       # daytime method
+    NEE_DT = GPP_DT+Reco_DT,
+    .groups = "drop"
+  ) %>%
+  group_by(crop_year) %>%
+  mutate(
+    cum_NEE = cumsum(NEE_f),
+    cum_NEE_DT = cumsum(NEE_DT),
+    cum_GPP_NT = cumsum(GPP_f),
+    cum_GPP_DT = cumsum(GPP_DT),
+    cum_Reco_DT = cumsum(Reco_DT),
+    cum_Reco_NT = cumsum(Reco)
+  ) %>%
+  pivot_longer(cols = starts_with("cum_"), names_to = "Variable", values_to = "Cumulative_Sum") %>%
+  ggplot(aes(x = DoY, y = Cumulative_Sum, color = Variable, linetype = Variable)) +
+  geom_line(linewidth = 1, alpha = 0.5) +
+  scale_color_manual(values = c(
+    "cum_GPP_NT" = "blue",
+    "cum_GPP_DT" = "darkorange",
+    "cum_Reco_NT" = "blue",
+    "cum_Reco_DT" = "darkorange",
+    "cum_NEE" = "blue",
+    "cum_NEE_DT" = "darkorange"
+  )) +
+  scale_linetype_manual(values = c(
+    "cum_GPP_NT" = "solid",
+    "cum_GPP_DT" = "solid",
+    "cum_Reco_NT" = "dashed",
+    "cum_Reco_DT" = "dashed",
+    "cum_NEE" = "dotted",
+    "cum_NEE_DT" = "dotted"
+  )) +
+  labs(
+    x = "Day of Year (DOY)",
+    y = "Cumulative CO₂ Flux (g C m⁻² yr⁻¹)",
+    title = "Cumulative CO₂ Fluxes Over the Crop Year",
+    color = "Variable",
+    linetype = "Variable"
+  ) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~crop_year, nrow = 1) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+ggsave("ntvsdt_p12_new.png", width = 10, height = 5)
+
+# night-time partitioning vs day-time partitioning - cumulative graph - calendar year
+
+CombinedData %>%
+  filter(!(Year == 2018 & doy < 121), !(Year == 2024 & doy > 120)) %>%
+  group_by(Year, DoY) %>%
+  summarise(
+    NEE_f = sum(NEE_U50_f * conv_factor),           # convert to g C m-2 d-1
+    GPP_f = -sum(GPP_U50_f * conv_factor),          # nighttime method
+    Reco = sum(Reco_U50 * conv_factor),             # nighttime method
+    GPP_DT = -sum(GPP_DT_U50 * conv_factor),        # daytime method
+    Reco_DT = sum(Reco_DT_U50 * conv_factor),       # daytime method
+    .groups = "drop"
+  ) %>%
+  group_by(Year) %>%
+  mutate(
+    cum_NEE = cumsum(NEE_f),
+    cum_GPP_NT = cumsum(GPP_f),
+    cum_GPP_DT = cumsum(GPP_DT),
+    cum_Reco_DT = cumsum(Reco_DT),
+    cum_Reco_NT = cumsum(Reco)
+  ) %>%
+  pivot_longer(cols = starts_with("cum_"), names_to = "Variable", values_to = "Cumulative_Sum") %>%
+  ggplot(aes(x = DoY, y = Cumulative_Sum, color = Variable, linetype = Variable)) +
+  geom_line(linewidth = 1, alpha = 0.5) +
+  scale_color_manual(values = c(
+    "cum_GPP_NT" = "blue",
+    "cum_GPP_DT" = "darkorange",
+    "cum_Reco_NT" = "blue",
+    "cum_Reco_DT" = "darkorange",
+    "cum_NEE" = "darkgray"
+  )) +
+  scale_linetype_manual(values = c(
+    "cum_GPP_NT" = "solid",
+    "cum_GPP_DT" = "solid",
+    "cum_Reco_NT" = "dashed",
+    "cum_Reco_DT" = "dashed",
+    "cum_NEE" = "solid"
+  )) +
+  labs(
+    x = "Day of Year (DOY)",
+    y = "Cumulative CO₂ Flux (g C m⁻² yr⁻¹)",
+    title = "Cumulative CO₂ Fluxes Over the Crop Year",
+    color = "Variable",
+    linetype = "Variable"
+  ) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~Year, nrow = 1) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+## plotting the daily results and comparing other partitioning and gap-filling methods
+
+# bring in the data Shannon separated for CO2 for 2023-2021 using Barr et al. (2004); this is what Nirmani used in her paper.
+
+seasonStarts2 <- seasonStarts
+colnames(seasonStarts2) <- c("doy", "year")
+
+# bring in dataset from other partitioning and gap-filling method.
+getwd()
+new_co2 <- read.csv("obs_data/measured_co2/co2_jevans_folder.csv", header = FALSE)
+
+colnames(new_co2) <- new_co2[2, ]
+new_co2 <- new_co2[-c(1:3),]
+new_co2$nee_obs <- as.numeric(new_co2$NEE)
+new_co2$gpp_obs <- as.numeric(new_co2$GPP)
+new_co2$resp_obs <- as.numeric(new_co2$Re)
+new_co2$Year <- as.numeric(new_co2$year)
+new_co2$source <- "co2_jevans_other"
+new_co2 <- new_co2 %>%
+  mutate(doy = as.numeric(doy)) %>% 
+  mutate(
+    crop_year = ifelse(year == 2018 & doy > 120 | year == 2019 & doy < 121, "18/19", 
+                       ifelse(year == 2019 & doy > 120 | year == 2020 & doy < 121, "19/20",
+                              ifelse(year == 2020 & doy > 120 | year == 2021 & doy < 121, "20/21",
+                                     ifelse(year == 2021 & doy > 120 | year == 2022 & doy < 121, "21/22",
+                                            ifelse(year == 2022 & doy > 120 | year == 2023 & doy < 121, "22/23",
+                                                   ifelse(year == 2023 & doy > 120 | year == 2024 & doy < 121, "23/24", NA))))))
+    
+  )
+
+
+check<-CombinedData %>% 
+  filter(Year== 2021 & doy %in% 130:160) %>% 
+  select(Year, doy, NEE, NEE_U50_f, NEE_U50_fqc, Reco_U50, Reco_DT_U50, Tair, Tair_f, VPD, VPD_f, Rg, Rg_f)
+
+CombinedData %>% 
+  filter(Year== 2021 & doy %in% 130:160) %>% 
+  ggplot()+
+  geom_line(aes(x = doy, y = Reco_U50))+
+  theme_bw()
+
+# CombinedData %>%
+#   filter(Year==2021) %>%
+#   filter(!GPP_U50_fqc >1) %>% 
+#   ggplot()+
+#   geom_point(aes(x = doy, y = NEE), color = "black", alpha=0.1)+
+#   #geom_point(aes(x = doy, y = -GPP_U50_f), color = "blue", alpha=0.1)+
+#   geom_point(aes(x = doy, y = Reco_U50), color = "red", alpha=0.1)
+# 
+# 
+# check<-CombinedData %>%
+#   filter(Year==2021 & doy %in% 120:150) %>% 
+#   select(Year, doy, NEE, GPP_U50_f, GPP_U50_fqc, Reco_U50, Tair, Tair_f)
+
+# creating a dataset with the reddyproc data 
+
+filled <- CombinedData %>%
+  #filter(NEE_U50_fqc<3) %>% 
+  # mutate(
+  # 
+  #   NEE_gC = NEE_uStar_f * conv_factor,
+  # 
+  #   GPP_uStar_f_gC = GPP_uStar_f * conv_factor, # nighttime method
+  #   Reco_uStar_gC = Reco_uStar * conv_factor, # nighttime method
+  # 
+  #   GPP_DT_uStar_gC = GPP_DT_uStar * conv_factor, # daytime method
+  #   Reco_DT_uStar_gC = Reco_DT_uStar * conv_factor # daytime method
+  # 
+  # ) %>%
+  mutate(
+    
+    NEE_gC = NEE_U50_f * conv_factor,
+    
+    GPP_U50_f_gC = GPP_U50_f * conv_factor, # nighttime method
+    Reco_U50_gC = Reco_U50 * conv_factor, # nighttime method
+    
+    GPP_DT_U50_gC = GPP_DT_U50 * conv_factor, # daytime method
+    Reco_DT_U50_gC = Reco_DT_U50 * conv_factor # daytime method
+    
+  ) %>%
+  group_by(doy, Year) %>%
   
-    # these are the variables that Sara Knox's code uses for final output reporting. Checking the difference among multiple output variables from REddyProc for NEE, it looks like in general there is not much difference between NEE_U50_f and NEE_uStart_f; I was initially thinking of using NEE_U50_f , but then I saw in Sara Knox’s code that she uses NEE_U50_f for some of her outputs. Annual aggregated values do not seem to show large differences between those two variables.Annual aggregated values do not seem to show large differences between those two variables.
+  # summarise(
+  #   
+  #   nee = NEE_gC,
+  #   
+  #   gpp_nt = GPP_uStar_f_gC, # nighttime method
+  #   re_nt = Reco_uStar_gC, # nighttime method
+  #   
+  #   gpp_dt = GPP_DT_uStar_gC, # daytime method
+  #   re_dt = Reco_DT_uStar_gC, # dayttime method
+  #   
+  # ) %>% 
+  summarise(
     
-    # NEE_uStar_f
+    nee = sum(NEE_gC),
     
-    # GPP_uStar_f : nightime partitioning method.
-    # Reco_uStar : nightime partitioning method.
+    gpp_nt = sum(GPP_U50_f_gC), # nighttime method
+    re_nt = sum(Reco_U50_gC), # nighttime method
     
-    # GPP_DT_uStar : daytime partitioning method.
-    # Reco_DT_uStar : daytime partitioning method.
+    gpp_dt = sum(GPP_DT_U50_gC), # daytime method
+    re_dt = sum(Reco_DT_U50_gC), # dayttime method
     
-# other information/variable names
+  )
 
-# VAR_orig - Original values used for gap filling 
-# VAR_f - Original values and gaps filled with mean of selected datapoints (condition depending on gap filling method) 
-# VAR_fqc - Quality flag assigned depending on gap filling method and window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable) 
-# VAR_fall - All values considered as gaps (for uncertainty estimates) 
-# VAR_fall_qc - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
-# VAR_fnum - Number of datapoints used for gap-filling 
-# VAR_fsd - Standard deviation of datapoints used for gap filling (uncertainty) 
-# VAR_fmeth - Method used for gap filling (1 = similar meteo condition (sFillLUT with Rg, VPD, Tair), 2 = similar meteo (sFillLUT with Rg only), 3 = mean diurnal course (sFillMDC)) 
-# VAR_fwin - Full window length used for gap filling
+filled2 <- CombinedData %>%
+  filter(NEE_U50_fqc<2) %>%
+  filter(Tair_fqc<2) %>% 
+  filter(Rg_fqc<2) %>% 
+  
+  # filter(GPP_U50_fqc<2) %>%
+  # filter(Ustar_U50_fqc<2) %>% 
+  #filter(Tair_fqc<2) %>% 
+  #filter(Rg_fqc<2) %>% 
+  
+  group_by(doy, Year) %>%
+  # mutate(
+  #   
+  #   nee = mean(NEE_uStar_f) * 1.0368,
+  #   
+  #   gpp_nt = mean(GPP_uStar_f) * 1.0368, # nighttime method
+  #   re_nt = mean(Reco_uStar) * 1.0368, # nighttime method
+  #   
+  #   gpp_dt = mean(GPP_DT_uStar) * 1.0368, # daytime method
+  #   re_dt = mean(Reco_DT_uStar) * 1.0368 # daytime method
+  #   
+  # )
+  mutate(
+    
+    nee = mean(NEE_U50_f, na.rm = TRUE) * 1.0368,
+    
+    gpp_nt = mean(GPP_U50_f, na.rm = TRUE) * 1.0368, # nighttime method
+    re_nt = mean(Reco_U50, na.rm = TRUE) * 1.0368, # nighttime method
+    
+    gpp_dt = mean(GPP_DT_U50, na.rm = TRUE) * 1.0368, # daytime method
+    re_dt = mean(Reco_DT_U50, na.rm = TRUE) * 1.0368, # daytime method
+    
+    tair = mean(Tair, na.rm = TRUE),
+    rg = mean(Rg_f, na.rm = TRUE)
+  )
+
+
+
+# combine datasets to be compared
+
+# combined <- filled %>% 
+#   left_join(filter(new_co2, plot == 1), by = c("Year", "doy")) # The key feature of left_join() is that it keeps all the rows from the left data frame and only the matching rows from the right data frame. If no match is found in the right data frame, NA values are inserted in the corresponding columns.
+
+# comparison graphs for nee
+
+filled2 %>%
+  filter(Year == 2020) %>% 
+  #filter(crop_year %in% c("18/19", "19/20", "20/21"))%>% 
+  #filter(crop_year %in% c("18/19", "19/20", "20/21", "21/22", "22/23", "23/24"))%>% 
+  
+  ggplot()+
+  # geom_line(aes(x = doy, y = nee_obs), color = "black", linetype = 1, size = 1, alpha = 0.5)+ # nirmani
+  # geom_line(aes(x = doy, y = nee), size = 1, color = "#0072B2", alpha = 0.5)+ # new
+  # 
+  #geom_line(aes(x = doy, y = gpp_obs), size = 1, color = "black", alpha = 0.75)+ # nirmani
+  # geom_line(aes(x = doy, y = -gpp_nt), color = "blue", linetype = 1, size = 1, alpha = 0.5)+ #new
+  # geom_line(aes(x = doy, y = -gpp_dt), color = "darkorange", linetype = 1, size = 1, alpha = 0.5)+ # new
+  
+  #geom_line(aes(x = doy, y = resp_obs), size = 1, color = "black", alpha = 0.75)+ # nirmani
+  geom_line(aes(x = doy, y = re_nt), color = "blue", linetype = 1, size = 1, alpha = 0.5)+ #new
+  geom_line(aes(x = doy, y = re_dt), color = "darkorange", linetype = 1, size = 1, alpha = 0.5)+ # new
+  
+  facet_wrap(Year~., nrow = 4)+
+  ylab("Reco (g C m-2 day-1)")+
+  #ylab("NEE (g C m-2 day-1)")+
+  #ylab("Reco (g C m-2 30-min-1)")+
+  #ylab("GPP (g C m-2 30-min-1)")+
+  
+  #geom_line(aes(x = doy, y = tair), color = "red", linetype = 1, size = 1, alpha = 0.5)+ # new
+  geom_line(aes(x = doy, y = nee), color = "darkgreen", linetype = 1, size = 1, alpha = 0.5)+ # new
+  # geom_point(aes(x = doy, y = rg), color = "purple", linetype = 1, size = 1, alpha = 0.5)+ # new
+  
+  labs(
+    title ="Reco",
+    subtitle = "Comparison daytime (yellow) and nightime (blue) partitioning methods"
+  )+
+  
+  theme_bw()+
+  theme(
+    legend.position = "bottom"
+  )
+
+ggsave("reco_daily_p12_new.png", width = 10, height = 7)
+
+
+CombinedData %>% 
+  filter(Year == 2020 & doy %in% 100:300) %>% 
+  group_by(doy) %>% 
+  summarise(
+    Rg = mean(Rg),
+    Tair = mean(Tair),
+    NEE_U50_f = mean(NEE_U50_f),
+    GPP_U50_f = mean(GPP_U50_f),
+    Reco_U50 = mean(Reco_U95)
+  ) %>% 
+  ggplot()+
+  geom_point(aes(x=doy, y=Rg))+
+  geom_point(aes(x=doy, y=Reco_U50*10), color = "red")+
+  geom_point(aes(x=doy, y=Tair*10), color = "blue")+
+  geom_point(aes(x=doy, y=NEE_U50_f*10), color = "darkgreen")
+
+
+
+ggplot( )+
+  #geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140), aes(x = doy, y = NEE))+
+  geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140  ), aes(x = doy, y = NEE_uStar_f), color = "blue", alpha = 0.2)+
+  geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140 & NEE_uStar_fqc <2 ), aes(x = doy, y = NEE_uStar_f), color = "red", alpha = 0.2)+
+  
+  
+  theme_bw()
+
+NEE_U50_f_HQ<-CombinedData %>% 
+  filter(Year==2021 & doy %in% 130:140 & NEE_U50_fqc <2 ) %>% 
+  group_by(doy, Year) %>%
+  summarise(
+    NEE_hq = mean(NEE_U50_f, na.rm = TRUE)
+  )
+
+CombinedData %>% 
+  group_by(Year) %>%
+  summarise(
+    total = n(),
+    prop_1 = sum(NEE_U50_fqc == 1) / total*100,
+    prop_2 = sum(NEE_U50_fqc == 2) / total*100,
+    prop_3 = sum(NEE_U50_fqc == 3) / total*100,
+    prop_4 = sum(NEE_U50_fqc == 4) / total*100
+  )
+
+
+CombinedData %>% 
+  filter(Year==2020) %>%
+  filter(doy %in% 1:365) %>%
+  group_by(doy, Year) %>%
+  summarise(
+    NEE = mean(NEE, na.rm = TRUE),
+    
+    NEE_U50_f = mean(NEE_U50_f),
+    
+    GPP_U50 = mean(GPP_U50_f),
+    Reco_U50 = mean(Reco_U50),
+    
+    GPP_DT_U50 = mean(GPP_DT_U50),
+    Reco_DT_U50 = mean(Reco_DT_U50),
+    
+    Tair = mean(Tair),
+    vpd = mean(VPD),
+    rg = mean(Rg)/10
+  ) %>%
+  ggplot()+
+  #geom_line(aes(x = doy, y = NEE_U50_f, alhpa = 0.5), color = "blue",linewidth = 1)+
+  geom_line(aes(x = doy, y = NEE, alhpa = 0.5), color = "blue",linewidth = 1)+
+  #geom_line(data = NEE_U50_f_HQ, aes(x = doy, y = NEE_hq, alhpa = 0.5), color = "green",linewidth = 1)+
+  
+  # geom_line(aes(x = doy, y = -GPP_DT_U50, alhpa = 0.5), color = "black", linewidth = 1)+
+  # geom_line(aes(x = doy, y = Reco_DT_U50, alpha = 0.5), color = "purple", linewidth = 1)+
+  
+  geom_line(aes(x = doy, y = -GPP_U50, alhpa = 0.5), color = "black", linewidth = 1)+
+  geom_line(aes(x = doy, y = Reco_U50, alpha = 0.5), color = "red", linewidth = 1)+
+  
+  geom_line(aes(x = doy, y = Tair, alpha = 0.5), color = "purple", linewidth = 1)+
+  #geom_line(aes(x = doy, y = vpd, alpha = 0.5), color = "lightblue", linewidth = 1)+
+  #geom_line(aes(x = doy, y = rg, alpha = 0.5), color = "darkgreen", linewidth = 1)+
+  
+  theme_bw()+
+  facet_wrap(Year~.)
+
+
+CombinedData %>% 
+  filter(Year==2020) %>%
+  #filter(doy %in% 200:250) %>%
+  ggplot()+
+  #geom_line(aes(x = doy, y = -GPP_DT_uStar, alhpa = 0.5), linewidth = 1)+
+  geom_point(aes(x = doy, y = NEE_uStar_f, alhpa = 0.5), color = "blue",linewidth = 1)+
+  geom_point(aes(x = doy, y = NEE_uStar_orig, alhpa = 0.5), linewidth = 1)+
+  #geom_line(aes(x = doy, y = Tair, alpha = 0.5), color = "red", linewidth = 1)+
+  #geom_line(aes(x = doy, y = vpd, alpha = 0.5), color = "lightblue", linewidth = 1)+
+  #geom_point(aes(x = doy, y = Rg, alpha = 0.5), color = "darkgreen", linewidth = 1)+
+  geom_line(aes(x = doy, y = Reco_DT_uStar, alpha = 0.5), color = "purple", linewidth = 1)+
+  geom_line(aes(x = doy, y = Reco_uStar, alpha = 0.5), color = "red", linewidth = 1)+
+  
+  theme_bw()
+
+sum(!is.na(CombinedData$NEE_uStar_orig))
+
+ggplot()+
+  # geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_DT_uStar))+
+  # geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_DT_uStar), color = "blue")+
+  geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_uStar))+
+  geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_uStar), color = "blue")+
+  # geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = NEE_uStar_f))+
+  # geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = NEE_uStar_f), color = "blue")+
+  theme_bw()
+
+CombinedData %>% 
+  filter(Year == 2019 & doy %in% c(250:280)) %>%
+  summarise(
+    n = sum(is.na(NEE_uStar_orig))
+  )
+
+# checking data 
+
+CombinedData_p12$Reco_DT_U50
+
+CombinedData_p12 %>% 
+  filter(Year == 2020 & doy %in% c(100:250)) %>%
+  # mutate(
+  # 
+  #   NEE_gC = NEE_uStar_f * conv_factor,
+  # 
+  #   GPP_uStar_f_gC = GPP_uStar_f * conv_factor, # nighttime method
+  #   Reco_uStar_gC = Reco_uStar * conv_factor, # nighttime method
+  # 
+  #   GPP_DT_uStar_gC = GPP_DT_uStar * conv_factor, # daytime method
+  #   Reco_DT_uStar_gC = Reco_DT_uStar * conv_factor # daytime method
+  # 
+  # ) %>%
+  # mutate(
+  #   
+  #   NEE_gC = NEE_uStar_f * conv_factor,
+  #   
+  #   GPP_uStar_f_gC = GPP_U50_f * conv_factor, # nighttime method
+  #   Reco_uStar_gC = Reco_U50 * conv_factor, # nighttime method
+  #   
+  #   GPP_DT_uStar_gC = GPP_DT_U50 * conv_factor, # daytime method
+  #   Reco_DT_uStar_gC = Reco_DT_U50 * conv_factor # daytime method
+  #   
+  # ) %>% 
+  group_by(doy) %>% 
+  # summarise(
+  #   GPP_uStar_f_gC = sum(GPP_uStar_f_gC),
+  #   GPP_DT_uStar_gC = sum(GPP_DT_uStar_gC)
+  # ) %>% 
+  summarise(
+    GPP_uStar_f_gC = mean(GPP_uStar_f),
+    GPP_DT_uStar_gC = mean(GPP_DT_uStar),
+    NEE = mean(NEE, na.rm = T),
+    LE = mean(LE, na.rm = T),
+    H = mean(H, na.rm = T),
+    Tair = mean(Tair, na.rm = T),
+    RH = mean(RH, na.rm = T),
+    VPD = mean(NEE, na.rm = T),
+    Rg = mean(Rg, na.rm = T),
+    Rg_f = mean(Rg_f, na.rm = T),
+    Tair_f= mean(Tair_f)
+  ) %>% 
+  ggplot()+
+  geom_line(aes(x = doy, y = -GPP_uStar_f_gC), color = "blue", linewidth=1)+
+  geom_line(aes(x = doy, y = -GPP_DT_uStar_gC), color = "orange", linewidth=1)+
+  #geom_point(aes(x = doy, y = NEE, alpha = 0.5), color = "red", linewidth=1)+
+  #geom_point(aes(x = doy, y = -LE, alpha = 0.5), color = "red", linewidth=1)+
+  #geom_line(aes(x = doy, y = H, alpha = 0.5), color = "red", linewidth=1)+
+  # geom_line(aes(x = doy, y = -Tair, alpha = 0.5), color = "red", linewidth=1)+
+  # geom_line(aes(x = doy, y = -Tair_f, alpha = 0.5), color = "blue", linewidth=1)+
+  # geom_line(aes(x = doy, y = -Rg/10, alpha = 0.5), color = "red", linewidth=1)+
+  # geom_line(aes(x = doy, y = -Rg_f/10, alpha = 0.5), color = "blue", linewidth=1)+
+  geom_line(aes(x = doy, y = VPD, alpha = 0.5), color = "red", linewidth=1)+
+  theme_bw()
+
+CombinedData_p12$Rg_f
+CombinedData_p12$LE
+CombinedData_p12$H
+CombinedData_p12$Tair
+CombinedData_p12$RH
+CombinedData_p12$VPD
+CombinedData_p12$Rg
+
+GPP_DT_uStar
+
+CombinedData_p12 %>% 
+  filter(Year == 2020 & doy %in% c(100:250)) %>%
+  group_by(doy) %>%
+  summarise(
+    Rg = mean(Rg, na.rm = T)
+  ) %>%
+  ggplot()+
+  geom_line(aes(x = doy, y = Rg/10))+
+  geom_point(data = filter(CombinedData_p12, Year == 2020 & doy %in% c(100:250) ), aes(x = doy, y = Reco_uStar, alpha = 0.1), color = "blue", linewidth=1)+
+  geom_point(data = filter(CombinedData_p12, Year == 2020 & doy %in% c(100:250) ), aes(x = doy, y = Reco_DT_uStar, alpha = 0.1), color = "orange", linewidth=1)+
+  theme_bw()
+
+CombinedData_p12 %>% 
+  filter(Year == 2023 & doy %in% c(150:200)) %>%
+  group_by(doy) %>%
+  summarise(
+    Rg = mean(Rg, na.rm = T),
+    GPP_uStar_f = mean(GPP_uStar_f),
+    GPP_DT_uStar = mean(GPP_DT_uStar)
+  ) %>%
+  ggplot()+
+  geom_line(aes(x = doy, y = Rg/10))+
+  # geom_point(data = filter(CombinedData_p12, Year == 2023 & doy %in% c(150:200) ), aes(x = doy, y = GPP_uStar_f, alpha = 0.1), color = "blue", linewidth=1)+
+  # geom_point(data = filter(CombinedData_p12, Year == 2023 & doy %in% c(150:200) ), aes(x = doy, y =GPP_DT_uStar , alpha = 0.1), color = "orange", linewidth=1)+
+  geom_line(aes(x = doy, y = GPP_uStar_f, alpha = 0.1), color = "blue", linewidth=1)+
+  geom_line(aes(x = doy, y =GPP_DT_uStar , alpha = 0.1), color = "orange", linewidth=1)+
+  theme_bw()
+
+
+# # comparison graphs for respiration
+# 
+# combined%>% 
+#   ggplot(aes(x = doy, y = resp))+
+#   geom_line(size = 1, color = "black", alpha = 0.75)+
+#   geom_line(aes(x = doy, y = resp_obs), color = "#D55E00", linetype = 1, size = 1, alpha = 0.5)+
+#   facet_wrap(year~., nrow = 6)+
+#   theme_bw()+
+#   geom_vline(data = filter(seasonStarts2, year %in% c(2023:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
+# 
+# # comparison graphs for gpp
+# 
+# combined%>% 
+#   ggplot(aes(x = doy, y = gpp*(-1)))+
+#   geom_line(size = 1, color = "black", alpha = 0.75)+
+#   geom_line(aes(x = doy, y = gpp_obs), color = "#009E73", linetype = 1, size = 1, alpha = 0.5)+
+#   facet_wrap(year~., nrow = 6)+
+#   theme_bw()+
+#   geom_vline(data = filter(seasonStarts2, year %in% c(2023:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
+# 
+# # graphing the sum of the fluxes across the entire year
+# 
+# # new dataset
+# 
+# combined_inner <- new_co2 %>% 
+#   filter(plot == 1) %>% 
+#   inner_join(filled, by = c("year", "doy")) # full join keeps only those points that are present in both datasets.
+# 
+# # merged graph
+# 
+# combined_inner %>% 
+#   filter(year %in% c(2023:2021)) %>%
+#   group_by(year) %>% 
+#   summarise(
+#     nee = sum(nee),
+#     gpp = sum(gpp)*(-1),
+#     resp = sum(resp),
+#     nee_obs = sum(nee_obs),
+#     gpp_obs = sum(gpp_obs),
+#     resp_obs = sum(resp_obs)
+#   ) %>%
+#   pivot_longer(
+#     cols = -year,  # All columns except 'year'
+#     names_to = "variable",
+#     values_to = "value"
+#   ) %>%
+#   mutate(
+#     source = ifelse(grepl("_obs$", variable), "shannon", "reddyproc"),  # Add "old" or "new"
+#     variable = str_remove(variable, "_obs$")
+#   ) %>% 
+#   mutate(variable = factor(variable, levels = c("gpp", "resp", "nee"))) %>%  # Set the desired order
+#   ggplot(aes(x = source, y = value, fill = interaction(source, variable))) +  # Color based on interaction between source and variable
+#   geom_col(colour = "black") +
+#   scale_fill_manual(
+#     values = c(
+#       "reddyproc.gpp" = "gray", "shannon.gpp" = "#009E73", 
+#       "reddyproc.resp" = "gray", "shannon.resp" = "#D55E00", 
+#       "reddyproc.nee" = "gray", "shannon.nee" = "#0072B2", 
+#       "reddyproc" = "gray", "shannon" = "white"
+#     )
+#   ) +  # Set custom colors for the interaction between source and variable
+#   facet_grid(vars(variable), vars(year)) +
+#   theme_bw() +
+#   geom_text(aes(label = round(value, digits = 0)), vjust = 0.5) +  # Adjust text position if needed
+#   theme(
+#     axis.text.x = element_text(angle = 45, hjust = 1)
+#   ) +
+#   ylab("Annual cumulative C flux (g/m2/year)")
 
 
 #######################################################################
@@ -1392,7 +2541,6 @@ conv_gC <- 1/(10^6)*12.011*60*60*24*length(results$NEE_U50_f)/48 # Converts umol
 mean_sdAnnual_gC <- mean_sdAnnual*conv_gC
 mean_sdAnnual_gC # final units in g C/m2/year
 
-
 # ading year (change every time you run the code)
 
 mean_sdAnnual_gC <- mean_sdAnnual_gC %>%
@@ -1862,1153 +3010,6 @@ output <- function(site,ini_path) {
 #######################################################################
 
 #######################################################################
-#################### graphs ###########################################
-
-#
-
-# plot for nee only (halfhourly) - EC + FG data color-coded
-
-CombinedData %>% 
-  ggplot(aes(x = DoY, y = NEE, color = source))+
-  geom_point(alpha = 0.3, size = 1)+
-  scale_color_manual(values = c("#0072B2", "#009E73"))+
-  facet_wrap(Year~., ncol=2)+
-  theme_bw()+
-  theme(
-    legend.position = "bottom"
-  )+
-  geom_vline(data = mgmt_dates_p3, aes(xintercept =doy) , color = "red", linetype = "dashed") +
-  labs(title = "REddyProc input data E26 - Plot3 -  NEE (Half-hourly)",
-       subtitle = "Red lines represent beginning and end of year, plus planting and harvest")+
-  ylab("NEE (umolm-2s-1)")
-
-ggsave("basic_nee_halfhourly_p3_filled.png", width = 9, height = 8) # saving the figure as png to the working directory
-
-# some final raw variables
-
-EddyData_basic_variables <- CombinedData %>% # converting data to long format (needed for plotting)
-  pivot_longer(
-    cols = c(LE, H, Ustar,Tair_f, RH, VPD_f, Rg_f, NEE_uStar_f),
-    names_to = "variables",
-    values_to = "values"
-  )
-summary_stats <- EddyData_basic_variables %>%
-  group_by(variables, Year) %>%
-  summarize(
-    mean_val = mean(values, na.rm = TRUE),
-    sd_val = sd(values, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-mgmt_dates_p1  <- seasonStarts # bringing in the management dates to plot them as vertical lines in the graph
-colnames(mgmt_dates_p1) <- c("doy", "Year")
-
-EddyData_basic_variables %>% # actual plot using ggplot
-  #filter(variables == "Rg") %>% 
-  filter(Year == 2023) %>%
-  ggplot(aes(x = DoY, y = values, colour = variables)) +
-  geom_point(alpha = 0.5, size = 1) +
-  facet_grid(vars(variables), vars(Year), scales = "free_y") +
-  theme_bw() +
-  theme(legend.position = "none") +
-  #geom_vline(data = mgmt_dates_p1, aes(xintercept =doy) , color = "red", linetype = "dashed") +
-  geom_text(data = filter(summary_stats, Year == 2023),
-            aes(x = Inf, y = Inf,
-                label = paste0("Mean: ", round(mean_val, 1), "\nSD: ", round(sd_val, 1))),
-            hjust = 1.1, vjust = 1.0,
-            inherit.aes = FALSE,
-            size = 3)+
-  labs(
-    title = "REddyProc input data E26 - Plot1 (Half-hourly data)",
-    subtitle = "Units: NEE (umolm-2s-1), LE (Wm-2), H (Wm-2), Ustar (ms-1), Tair (degC), RH (%), VPD (hPa), Rg (Wm-2)"
-  )
-
-
-# halfhourly observations
-
-# crop year (doy 121 to doy 120)
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  mutate(
-    doy_crop = case_when(
-      doy >= 121 ~ doy - 120,         # e.g., doy 121 becomes 1, 122 becomes 2, ..., 365 becomes 245
-      doy <= 120 ~ doy + (365 - 120)  # e.g., doy 1 becomes 246, 120 becomes 365
-    )
-  ) %>%
-  pivot_longer(
-    cols = c(NEE, NEE_uStar_f, NEE_uStar_orig),
-    names_to = "variables",
-    values_to = "value"
-  ) %>%
-  mutate(variables = factor(variables, levels = c("NEE", "NEE_uStar_orig", "NEE_uStar_f"))) %>%
-  mutate(
-    variables = recode(variables, 
-                       "NEE_uStar_f" = "u*-filtered & gap-filled NEE",
-                       "NEE_uStar_orig" = "u*-filtered NEE",
-                       "NEE" = "NEE after initial filtering",
-    )) %>% 
-  ggplot(aes(x = doy_crop, y = value, colour = variables))+
-  geom_point(alpha = 0.4, size = 0.9)+
-  geom_vline(xintercept = 245, color = "red", linetype = "dashed")+ # DOY 365 in crop day terms
-  facet_grid(vars(variables), vars(crop_year), )+
-  theme_bw()+
-  ylab("NEE (umolm-2s-1)")+
-  theme(
-    legend.position = "none"
-  )+
-  labs(title = "NEE dataset at multiple stages of REddyProc processing - P34",
-       #subtitle = "Red lines represent beginning and end of year, plus planting and harvest"
-       )+ 
-  scale_x_continuous(
-    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
-    labels = c("121", "200", "300", "365", "120")
-       )
-
-ggsave(filename = "rproc_p3_nee.png", width = 10, height = 6, dpi = 300)
-
-# estimating the n 
-
-# main one I used
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  #filter((doy > 130 & doy < 300)) %>%
-  group_by(crop_year) %>% 
-  summarise(
-    NEE_n_raw = sum(!is.na(NEE_raw)),
-    NEE_n_raw2 = sum(!is.na(NEE_raw2)),
-    n_NEE_uStar_orig = sum(!is.na(NEE_U50_orig)),
-    n_NEE_uStar_f = sum(!is.na(NEE_U50_f)),
-    n_NEE_uStar_f_na = sum(is.na(NEE_U50_f))
-  ) %>%
-  group_by(crop_year) %>% 
-  summarise(
-    NEE_n_raw  = sum(NEE_n_raw),
-    NEE_n_raw2  = sum(NEE_n_raw2),
-    NEE_n_after_filtering = sum(n_NEE_uStar_orig),
-    NEE_n_gap_filled = sum(n_NEE_uStar_f),
-    NEE_n_remaining_na  = sum(n_NEE_uStar_f_na )
-  )   
-
-# other estimations of total number of observations
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  #filter((doy > 130 & doy < 300)) %>%
-  group_by(crop_year) %>% 
-  summarise(
-    NEE_n_raw = sum(!is.na(NEE_raw)),
-    NEE_n_in_filt = sum(!is.na(NEE)),
-    NEE_n_U50_ustar_fil    = sum(!is.na(NEE_U50_orig)),
-    n_NEE_U50_f = sum(!is.na(NEE_U50_f)),
-    n_NEE_U50_f_na    = sum(is.na(NEE_U50_f)),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    prop_raw_vs      = NEE_n_raw / n_NEE_U50_f*100,
-    prop_nee_in_filt      = NEE_n_in_filt / n_NEE_U50_f*100,
-    prop_U50_ustar_fil    = NEE_n_U50_ustar_fil / n_NEE_U50_f*100,
-    prop_NEE_U50_f = n_NEE_U50_f / n_NEE_U50_f*100,
-    prop_remaining_na_vs_final = n_NEE_U50_f_na / n_NEE_U50_f*100
-  )
-
-
-# crop year p12
-
-mgmt_labels <- mgmt_dates_p1 %>%
-  mutate(
-    label = paste0("DOY = ", doy),
-    y_pos = min(c(mod_co2_p1$mod_nee, obs_co2_p1$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
-  )
-
-custom_labels_facets <- c(
-  "18/19" = "Year 1 (18-19 | Corn)",
-  "19/20" = "Year 2 (19-20 | Soybean)",
-  "20/21" = "Year 3 (20-21 | Soybean)",
-  "21/22" = "Year 4 (21-22 | Corn)",
-  "22/23" = "Year 5 (22-23 | Soybean)",
-  "23/24" = "Year 6 (23-24 | Soybean)"
-)
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>%
-  filter(!(Year == 2024 & doy > 120)) %>%
-  # create crop-day
-  mutate(doy_crop = case_when(
-    doy >= 121 ~ doy - 120,
-    doy <= 120 ~ doy + (365 - 120)
-  )) %>%
-  # keep only the additional (gap-filled) points in NEE_U50_f
-  mutate(
-    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
-  ) %>%
-  pivot_longer(
-    cols = c(NEE_U50_orig, NEE_U50_f_plot),
-    names_to = "variables",
-    values_to = "value"
-  ) %>%
-  mutate(
-    variables = recode(variables,
-                       "NEE_U50_orig"   = "Original NEE",
-                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
-    ),
-    variables = factor(variables,
-                       levels = c("Original NEE", "Gap-filled NEE")
-    )
-  ) %>%
-  ggplot(aes(x = doy_crop, y = value, color = variables)) +
-  geom_point( size = 0.9, shape = 21) +
-  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
-                                "Original NEE" = "#999999"))+
-  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
-  theme_bw()+
-  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
-  xlab("Day of year")+
-  theme(
-    legend.position = "bottom",
-    legend.title = element_blank()
-  )+
-  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
-  scale_x_continuous(
-    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
-    labels = c("121", "200", "300", "365", "120")
-  )+
-  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
-  geom_text(
-    data = doy365_label,
-    aes(x = doy_crop, y = -30, label = label),
-    angle = 90,
-    vjust = 1.4,  # Adjust vertical justification (above the line)
-    hjust = 1,     # Align text so it’s right over the line
-    size = 3.0,
-    color = "black",
-    inherit.aes = FALSE
-  ) +
-  geom_vline(
-    data = mgmt_dates_p1,
-    aes(xintercept = doy_crop),
-    color = "brown", linetype = "dashed", size = 0.6,
-    inherit.aes = FALSE
-  ) +
-  # Add text labels for vertical lines
-  geom_text(
-    data = mgmt_labels,
-    aes(x = doy_crop, y = -30, label = label),
-    angle = 90,
-    vjust = 1.4,  # Adjust vertical justification (above the line)
-    hjust = 1,     # Align text so it’s right over the line
-    size = 3.0,
-    color = "brown",
-    inherit.aes = FALSE
-  )
-
-ggsave(filename = "rproc_p12_nee.png", width = 8, height = 6, dpi = 300)
-
-
-# crop year p3
-
-mgmt_labels <- mgmt_dates_p3 %>%
-  mutate(
-    label = paste0("DOY = ", doy),
-    y_pos = min(c(mod_co2_p3$mod_nee, obs_co2_p3$nee_g_c_m2_day), na.rm = TRUE) # slightly above max y
-  )
-custom_labels_facets <- c(
-  "18/19" = "Year 1 (18-19 | Corn+2-CC)",
-  "19/20" = "Year 2 (19-20 | Soybean+WW)",
-  "20/21" = "Year 3 (20-21 | WW+4-CC)",
-  "21/22" = "Year 4 (21-22 | Corn+2-CC)",
-  "22/23" = "Year 5 (22-23 | Soybean+WW)",
-  "23/24" = "Year 6 (23-24 | WW+4-CC)"
-)
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>%
-  filter(!(Year == 2024 & doy > 120)) %>%
-  # create crop-day
-  mutate(doy_crop = case_when(
-    doy >= 121 ~ doy - 120,
-    doy <= 120 ~ doy + (365 - 120)
-  )) %>%
-  # keep only the additional (gap-filled) points in NEE_U50_f
-  mutate(
-    NEE_U50_f_plot = ifelse(is.na(NEE_U50_orig), NEE_U50_f, NA)
-  ) %>%
-  pivot_longer(
-    cols = c(NEE_U50_orig, NEE_U50_f_plot),
-    names_to = "variables",
-    values_to = "value"
-  ) %>%
-  mutate(
-    variables = recode(variables,
-                       "NEE_U50_orig"   = "Original NEE",
-                       "NEE_U50_f_plot" = "Gap-filled NEE"   # <-- here!
-    ),
-    variables = factor(variables,
-                       levels = c("Original NEE", "Gap-filled NEE")
-    )
-  ) %>%
-  ggplot(aes(x = doy_crop, y = value, color = variables)) +
-  geom_point( size = 0.9, shape = 21) +
-  scale_color_manual(values = c("Gap-filled NEE" = "#F0E442", 
-                                "Original NEE" = "#999999"))+
-  facet_wrap(~crop_year, nrow = 2, labeller = labeller(crop_year = custom_labels_facets)) +
-  theme_bw()+
-  ylab(expression(NEE~(mu*mol~m^-2~s^-1)))+
-  xlab("Day of year")+
-  theme(
-    legend.position = "bottom",
-    legend.title = element_blank()
-  )+
-  scale_y_continuous(limits = c(-100, 60), breaks = seq(-100, 60, by = 20))+
-  scale_x_continuous(
-    breaks = c(1, 80, 180, 245, 365),  # These are doy_crop values corresponding to DOY 121, 200, 300, 365
-    labels = c("121", "200", "300", "365", "120")
-  )+
-  geom_vline(xintercept = 245, linetype = "dotted", color = "gray50", size = 0.6) + # Crop day for DOY 365
-  geom_text(
-    data = doy365_label,
-    aes(x = doy_crop, y = -30, label = label),
-    angle = 90,
-    vjust = 1.4,  # Adjust vertical justification (above the line)
-    hjust = 1,     # Align text so it’s right over the line
-    size = 3.0,
-    color = "black",
-    inherit.aes = FALSE
-  ) +
-  geom_vline(
-    data = mgmt_dates_p3,
-    aes(xintercept = doy_crop),
-    color = "brown", linetype = "dashed", size = 0.6,
-    inherit.aes = FALSE
-  ) +
-  # Add text labels for vertical lines
-  geom_text(
-    data = mgmt_labels,
-    aes(x = doy_crop, y = -30, label = label),
-    angle = 90,
-    vjust = 1.4,  # Adjust vertical justification (above the line)
-    hjust = 1,     # Align text so it’s right over the line
-    size = 3.0,
-    color = "brown",
-    inherit.aes = FALSE
-  )
-
-ggsave(filename = "rproc_p3_nee.png", width = 8, height = 6, dpi = 300)
-
-# calendar year
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  # pivot_longer(
-  #   cols = c(NEE, NEE_uStar_f, NEE_uStar_orig),
-  #   names_to = "variables",
-  #   values_to = "value"
-  # ) %>%
-  pivot_longer(
-    cols = c(NEE_uStar_f, NEE_uStar_orig),
-    names_to = "variables",
-    values_to = "value"
-  ) %>%
-  mutate(variables = factor(variables, levels = c("NEE_uStar_orig", "NEE_uStar_f"))) %>%
-  mutate(
-    variables = recode(variables, 
-                       "NEE_uStar_f" = "u*-filtered & gap-filled NEE",
-                       "NEE_uStar_orig" = "u*-filtered NEE",
-                       #"NEE" = "NEE after initial filtering",
-    )) %>% 
-  ggplot(aes(x = doy, y = value, colour = variables))+
-  geom_line(alpha = 0.4, size = 0.9)+
-  geom_vline(xintercept = 121, color = "red", linetype = "dashed")+
-  facet_wrap(crop_year~., ncol = 2)+
-  scale_colour_manual(values = c("black", "yellow"))+
-  #facet_grid(vars(variables), vars(Year))+
-  theme_bw()+
-  ylab("NEE (umolm-2s-1)")+
-  theme(
-    legend.position = "right"
-  )+
-  labs(title = "Halfhourly NEE dataset at multiple stages of REddyProc processing - P12",
-       #subtitle = "Red lines represent beginning and end of year, plus planting and harvest"
-  )
-
-ggsave(filename = "rproc_p1_nee_filled_vs_nofilled_new.png", width = 10, height = 6, dpi = 300)
-
-# annual values
-
-# Conversion factor
-conv_factor <- 12.011 / 1e6 * 1800
-
-# --- Nighttime method ---
-night_df <- CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  mutate(
-    NEE_gC = NEE_U50_f * conv_factor,
-    GPP_gC = GPP_U50_f * conv_factor,
-    Reco_gC = Reco_U50 * conv_factor
-  ) %>%
-  # mutate(
-  #   NEE_gC = NEE_uStar_f * conv_factor,
-  #   GPP_gC = GPP_uStar_f * conv_factor,
-  #   Reco_gC = Reco_uStar * conv_factor
-  # ) %>%
-  group_by(crop_year) %>%
-  summarise(
-    method = "Nighttime",
-    NEE = sum(NEE_gC, na.rm = TRUE),
-    GPP = -sum(GPP_gC, na.rm = TRUE),
-    Reco = sum(Reco_gC, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  pivot_longer(cols = c(NEE, GPP, Reco), names_to = "variable", values_to = "value")
-
-# --- Daytime method ---
-day_df <- CombinedData %>%
-  filter(!(Year == 2018 & doy < 121)) %>% 
-  filter(!(Year == 2024 & doy > 120)) %>%
-  mutate(
-    GPP_gC = GPP_DT_U50 * conv_factor,
-    Reco_gC = Reco_DT_U50 * conv_factor,
-    NEE_gC = -GPP_gC + Reco_gC
-  ) %>%
-  # mutate(
-  #   GPP_gC = GPP_DT_uStar * conv_factor,
-  #   Reco_gC = Reco_DT_uStar * conv_factor,
-  #   NEE_gC = -GPP_gC + Reco_gC
-  # ) %>%
-  group_by(crop_year) %>%
-  summarise(
-    method = "Daytime",
-    NEE = sum(NEE_gC, na.rm = TRUE),
-    GPP = -sum(GPP_gC, na.rm = TRUE),
-    Reco = sum(Reco_gC, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  pivot_longer(cols = c(NEE, GPP, Reco), names_to = "variable", values_to = "value")
-
-# --- Combine and format ---
-combined_df <- bind_rows(night_df, day_df) %>%
-  mutate(
-    variable = factor(variable, levels = c("GPP", "Reco", "NEE")),
-    method = factor(method, levels = c("Nighttime", "Daytime")),
-    fill_color = case_when(
-      variable %in% c("GPP", "Reco", "NEE") & method == "Nighttime" ~ "#0072B2",
-      variable %in% c("GPP", "Reco", "NEE") & method == "Daytime" ~ "#E69F00"
-    ),
-    pattern = case_when(
-      variable == "Reco" ~ "stripe",
-      variable == "NEE"  ~ "circle",
-      TRUE ~ "none"
-    ),
-    label_vjust = case_when(
-      variable == "GPP" ~ 0.5,
-      variable == "Reco" ~ 0.4,
-      variable == "NEE" ~ 0.5,
-      ),
-    label_color = if_else(variable == "GPP", "white", "black")
-  )
-
-# --- Plot ---
-ggplot(combined_df, aes(x = variable, y = value, fill = fill_color, pattern = pattern)) +
-  geom_col_pattern(
-    position = position_dodge2(preserve = "single"),
-    colour = "black",               # Black border for the bars
-    pattern_fill = "white",         # White-filled pattern shapes
-    pattern_colour = NA,            # Remove black outline from patterns
-    pattern_angle = 45,
-    pattern_density = 0.4,         # Lower density = fewer, bigger patterns
-    pattern_spacing = 0.05,          # Higher spacing = more room between patterns (bigger visible shapes)
-    pattern_key_scale_factor = 0.1
-  )+
-  scale_fill_identity() +
-  scale_pattern_identity() +
-  geom_text(
-    aes(label = round(value, 0), vjust = label_vjust, colour = label_color, hjust = -0.1),
-    position = position_dodge2(width = 0.9),
-    angle = 90,
-    show.legend = FALSE
-  ) +
-  scale_y_continuous(limits = c(-1800, 1800), breaks = seq(-1800, 1800, by = 200))+
-  scale_color_identity() +
-  facet_wrap(~ crop_year, nrow = 1) +
-  ylab("C fluxes (g C m⁻² year⁻¹)") +
-  theme_bw() +
-  theme(
-    legend.position = "bottom",
-    axis.text.x = element_text(angle = 90, vjust = 0.5)
-  )
-
-ggsave("annual_sum_p3.png", width = 10, height = 5)
-
-
-# incorporating error
-
-sd_long <- mean_sdAnnual_gC_all %>%
-  mutate(
-    crop_year = crop_year
-  ) %>%
-  select(crop_year,
-         sd_GPP_Ustar_NT, sd_Reco_Ustar_NT,
-         sd_GPP_Ustar_DT, sd_Reco_Ustar_DT,
-         sdComb) %>%
-  pivot_longer(
-    cols = -crop_year,
-    names_to = "var_method",
-    values_to = "sd"
-  ) %>%
-  mutate(
-    variable = case_when(
-      str_detect(var_method, "GPP") ~ "GPP",
-      str_detect(var_method, "Reco") ~ "Reco",
-      str_detect(var_method, "sdComb") ~ "NEE"
-    ),
-    method = case_when(
-      str_detect(var_method, "_NT") ~ "Nighttime",
-      str_detect(var_method, "_DT") ~ "Daytime",
-      var_method == "sdComb" ~ "Nighttime"  # NEE sdComb applies to nighttime only
-    )
-  ) %>%
-  select(crop_year, variable, method, sd)
-
-plot_df <- combined_df %>%
-  left_join(sd_long, by = c("crop_year", "variable", "method")) %>%
-  mutate(
-    ymin = value - sd,
-    ymax = value + sd
-  )
-plot_df$variable <- factor(plot_df$variable, levels = c("GPP", "Reco", "NEE"))
-
-
-# --- Plot ---
-ggplot(plot_df, aes(x = variable, y = value, fill = fill_color, pattern = pattern)) +
-  geom_col_pattern(
-    position = position_dodge2(width = 0.9),
-    colour = "black",               # Black border for the bars
-    pattern_fill = "white",         # White-filled pattern shapes
-    pattern_colour = NA,            # Remove black outline from patterns
-    pattern_angle = 45,
-    pattern_density = 0.4,         # Lower density = fewer, bigger patterns
-    pattern_spacing = 0.05,          # Higher spacing = more room between patterns (bigger visible shapes)
-    pattern_key_scale_factor = 0.1
-  )+
-  geom_errorbar(
-    aes(ymin = ymin, ymax = ymax),
-    position = position_dodge2(width = 0.9),
-    width = 0.9,
-    
-    color = "black",
-    na.rm = TRUE
-  )+
-  scale_fill_identity() +
-  scale_pattern_identity() +
-  geom_text(
-    aes(label = round(value, 0), vjust = label_vjust, colour = label_color, hjust = -0.5),
-    position = position_dodge2(width = 0.9),
-    angle = 90,
-    show.legend = FALSE
-  ) +
-  scale_y_continuous(limits = c(-1800, 1850), breaks = seq(-1800, 1800, by = 200))+
-  scale_color_identity() +
-  facet_wrap(~ crop_year, nrow = 1) +
-  ylab("NEE (g C m⁻² year⁻¹)") +
-  theme_bw() +
-  theme(
-    legend.position = "bottom",
-    axis.text.x = element_text(angle = 90, vjust = 0.5)
-  )+
-  labs(title = "Annual fluxes P1/2",
-       subtitle = "Error bars = SD (NEE = random + u*, GPP = u*, Reco = u*)")
-
-
-ggsave("annual_sum_p1.png", width = 10, height = 6)
-
-
-# night-time partitioning vs day-time partitioning - cumulative graph - crop year
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121), !(Year == 2024 & doy > 120)) %>%
-  group_by(crop_year, DoY) %>%
-  summarise(
-    NEE_f = sum(NEE_U50_f * conv_factor),           # convert to g C m-2 d-1
-    GPP_f = -sum(GPP_U50_f * conv_factor),          # nighttime method
-    Reco = sum(Reco_U50 * conv_factor),             # nighttime method
-    GPP_DT = -sum(GPP_DT_U50 * conv_factor),        # daytime method
-    Reco_DT = sum(Reco_DT_U50 * conv_factor),       # daytime method
-    NEE_DT = GPP_DT+Reco_DT,
-    .groups = "drop"
-  ) %>%
-  group_by(crop_year) %>%
-  mutate(
-    cum_NEE = cumsum(NEE_f),
-    cum_NEE_DT = cumsum(NEE_DT),
-    cum_GPP_NT = cumsum(GPP_f),
-    cum_GPP_DT = cumsum(GPP_DT),
-    cum_Reco_DT = cumsum(Reco_DT),
-    cum_Reco_NT = cumsum(Reco)
-  ) %>%
-  pivot_longer(cols = starts_with("cum_"), names_to = "Variable", values_to = "Cumulative_Sum") %>%
-  ggplot(aes(x = DoY, y = Cumulative_Sum, color = Variable, linetype = Variable)) +
-  geom_line(linewidth = 1, alpha = 0.5) +
-  scale_color_manual(values = c(
-    "cum_GPP_NT" = "blue",
-    "cum_GPP_DT" = "darkorange",
-    "cum_Reco_NT" = "blue",
-    "cum_Reco_DT" = "darkorange",
-    "cum_NEE" = "blue",
-    "cum_NEE_DT" = "darkorange"
-  )) +
-  scale_linetype_manual(values = c(
-    "cum_GPP_NT" = "solid",
-    "cum_GPP_DT" = "solid",
-    "cum_Reco_NT" = "dashed",
-    "cum_Reco_DT" = "dashed",
-    "cum_NEE" = "dotted",
-    "cum_NEE_DT" = "dotted"
-  )) +
-  labs(
-    x = "Day of Year (DOY)",
-    y = "Cumulative CO₂ Flux (g C m⁻² yr⁻¹)",
-    title = "Cumulative CO₂ Fluxes Over the Crop Year",
-    color = "Variable",
-    linetype = "Variable"
-  ) +
-  geom_hline(yintercept = 0) +
-  facet_wrap(~crop_year, nrow = 1) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-
-ggsave("ntvsdt_p12_new.png", width = 10, height = 5)
-
-# night-time partitioning vs day-time partitioning - cumulative graph - calendar year
-
-CombinedData %>%
-  filter(!(Year == 2018 & doy < 121), !(Year == 2024 & doy > 120)) %>%
-  group_by(Year, DoY) %>%
-  summarise(
-    NEE_f = sum(NEE_U50_f * conv_factor),           # convert to g C m-2 d-1
-    GPP_f = -sum(GPP_U50_f * conv_factor),          # nighttime method
-    Reco = sum(Reco_U50 * conv_factor),             # nighttime method
-    GPP_DT = -sum(GPP_DT_U50 * conv_factor),        # daytime method
-    Reco_DT = sum(Reco_DT_U50 * conv_factor),       # daytime method
-    .groups = "drop"
-  ) %>%
-  group_by(Year) %>%
-  mutate(
-    cum_NEE = cumsum(NEE_f),
-    cum_GPP_NT = cumsum(GPP_f),
-    cum_GPP_DT = cumsum(GPP_DT),
-    cum_Reco_DT = cumsum(Reco_DT),
-    cum_Reco_NT = cumsum(Reco)
-  ) %>%
-  pivot_longer(cols = starts_with("cum_"), names_to = "Variable", values_to = "Cumulative_Sum") %>%
-  ggplot(aes(x = DoY, y = Cumulative_Sum, color = Variable, linetype = Variable)) +
-  geom_line(linewidth = 1, alpha = 0.5) +
-  scale_color_manual(values = c(
-    "cum_GPP_NT" = "blue",
-    "cum_GPP_DT" = "darkorange",
-    "cum_Reco_NT" = "blue",
-    "cum_Reco_DT" = "darkorange",
-    "cum_NEE" = "darkgray"
-  )) +
-  scale_linetype_manual(values = c(
-    "cum_GPP_NT" = "solid",
-    "cum_GPP_DT" = "solid",
-    "cum_Reco_NT" = "dashed",
-    "cum_Reco_DT" = "dashed",
-    "cum_NEE" = "solid"
-  )) +
-  labs(
-    x = "Day of Year (DOY)",
-    y = "Cumulative CO₂ Flux (g C m⁻² yr⁻¹)",
-    title = "Cumulative CO₂ Fluxes Over the Crop Year",
-    color = "Variable",
-    linetype = "Variable"
-  ) +
-  geom_hline(yintercept = 0) +
-  facet_wrap(~Year, nrow = 1) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-
-## plotting the daily results and comparing other partitioning and gap-filling methods
-
-# bring in the data Shannon separated for CO2 for 2023-2021 using Barr et al. (2004); this is what Nirmani used in her paper.
-
-seasonStarts2 <- seasonStarts
-colnames(seasonStarts2) <- c("doy", "year")
-
-# bring in dataset from other partitioning and gap-filling method.
-getwd()
-new_co2 <- read.csv("obs_data/measured_co2/co2_jevans_folder.csv", header = FALSE)
-
-colnames(new_co2) <- new_co2[2, ]
-new_co2 <- new_co2[-c(1:3),]
-new_co2$nee_obs <- as.numeric(new_co2$NEE)
-new_co2$gpp_obs <- as.numeric(new_co2$GPP)
-new_co2$resp_obs <- as.numeric(new_co2$Re)
-new_co2$Year <- as.numeric(new_co2$year)
-new_co2$source <- "co2_jevans_other"
-new_co2 <- new_co2 %>%
-  mutate(doy = as.numeric(doy)) %>% 
-  mutate(
-    crop_year = ifelse(year == 2018 & doy > 120 | year == 2019 & doy < 121, "18/19", 
-                       ifelse(year == 2019 & doy > 120 | year == 2020 & doy < 121, "19/20",
-                              ifelse(year == 2020 & doy > 120 | year == 2021 & doy < 121, "20/21",
-                                     ifelse(year == 2021 & doy > 120 | year == 2022 & doy < 121, "21/22",
-                                            ifelse(year == 2022 & doy > 120 | year == 2023 & doy < 121, "22/23",
-                                                   ifelse(year == 2023 & doy > 120 | year == 2024 & doy < 121, "23/24", NA))))))
-    
-  )
-
-
-check<-CombinedData %>% 
-  filter(Year== 2021 & doy %in% 130:160) %>% 
-  select(Year, doy, NEE, NEE_U50_f, NEE_U50_fqc, Reco_U50, Reco_DT_U50, Tair, Tair_f, VPD, VPD_f, Rg, Rg_f)
-
-CombinedData %>% 
-  filter(Year== 2021 & doy %in% 130:160) %>% 
-  ggplot()+
-  geom_line(aes(x = doy, y = Reco_U50))+
-  theme_bw()
-
-# CombinedData %>%
-#   filter(Year==2021) %>%
-#   filter(!GPP_U50_fqc >1) %>% 
-#   ggplot()+
-#   geom_point(aes(x = doy, y = NEE), color = "black", alpha=0.1)+
-#   #geom_point(aes(x = doy, y = -GPP_U50_f), color = "blue", alpha=0.1)+
-#   geom_point(aes(x = doy, y = Reco_U50), color = "red", alpha=0.1)
-# 
-# 
-# check<-CombinedData %>%
-#   filter(Year==2021 & doy %in% 120:150) %>% 
-#   select(Year, doy, NEE, GPP_U50_f, GPP_U50_fqc, Reco_U50, Tair, Tair_f)
-
-# creating a dataset with the reddyproc data 
-
-filled <- CombinedData %>%
-  #filter(NEE_U50_fqc<3) %>% 
-  # mutate(
-  # 
-  #   NEE_gC = NEE_uStar_f * conv_factor,
-  # 
-  #   GPP_uStar_f_gC = GPP_uStar_f * conv_factor, # nighttime method
-  #   Reco_uStar_gC = Reco_uStar * conv_factor, # nighttime method
-  # 
-  #   GPP_DT_uStar_gC = GPP_DT_uStar * conv_factor, # daytime method
-  #   Reco_DT_uStar_gC = Reco_DT_uStar * conv_factor # daytime method
-  # 
-  # ) %>%
-  mutate(
-    
-    NEE_gC = NEE_U50_f * conv_factor,
-
-    GPP_U50_f_gC = GPP_U50_f * conv_factor, # nighttime method
-    Reco_U50_gC = Reco_U50 * conv_factor, # nighttime method
-
-    GPP_DT_U50_gC = GPP_DT_U50 * conv_factor, # daytime method
-    Reco_DT_U50_gC = Reco_DT_U50 * conv_factor # daytime method
-
-  ) %>%
-  group_by(doy, Year) %>%
-
-  # summarise(
-  #   
-  #   nee = NEE_gC,
-  #   
-  #   gpp_nt = GPP_uStar_f_gC, # nighttime method
-  #   re_nt = Reco_uStar_gC, # nighttime method
-  #   
-  #   gpp_dt = GPP_DT_uStar_gC, # daytime method
-  #   re_dt = Reco_DT_uStar_gC, # dayttime method
-  #   
-  # ) %>% 
-  summarise(
-    
-    nee = sum(NEE_gC),
-    
-    gpp_nt = sum(GPP_U50_f_gC), # nighttime method
-    re_nt = sum(Reco_U50_gC), # nighttime method
-    
-    gpp_dt = sum(GPP_DT_U50_gC), # daytime method
-    re_dt = sum(Reco_DT_U50_gC), # dayttime method
-    
-  )
-
-filled2 <- CombinedData %>%
-   filter(NEE_U50_fqc<2) %>%
-  filter(Tair_fqc<2) %>% 
-  filter(Rg_fqc<2) %>% 
-  
-  # filter(GPP_U50_fqc<2) %>%
-  # filter(Ustar_U50_fqc<2) %>% 
-  #filter(Tair_fqc<2) %>% 
-  #filter(Rg_fqc<2) %>% 
-  
-  group_by(doy, Year) %>%
-  # mutate(
-  #   
-  #   nee = mean(NEE_uStar_f) * 1.0368,
-  #   
-  #   gpp_nt = mean(GPP_uStar_f) * 1.0368, # nighttime method
-  #   re_nt = mean(Reco_uStar) * 1.0368, # nighttime method
-  #   
-  #   gpp_dt = mean(GPP_DT_uStar) * 1.0368, # daytime method
-  #   re_dt = mean(Reco_DT_uStar) * 1.0368 # daytime method
-  #   
-  # )
-  mutate(
-    
-    nee = mean(NEE_U50_f, na.rm = TRUE) * 1.0368,
-    
-    gpp_nt = mean(GPP_U50_f, na.rm = TRUE) * 1.0368, # nighttime method
-    re_nt = mean(Reco_U50, na.rm = TRUE) * 1.0368, # nighttime method
-    
-    gpp_dt = mean(GPP_DT_U50, na.rm = TRUE) * 1.0368, # daytime method
-    re_dt = mean(Reco_DT_U50, na.rm = TRUE) * 1.0368, # daytime method
-    
-    tair = mean(Tair, na.rm = TRUE),
-    rg = mean(Rg_f, na.rm = TRUE)
-  )
-
-
-
-# combine datasets to be compared
-
-# combined <- filled %>% 
-#   left_join(filter(new_co2, plot == 1), by = c("Year", "doy")) # The key feature of left_join() is that it keeps all the rows from the left data frame and only the matching rows from the right data frame. If no match is found in the right data frame, NA values are inserted in the corresponding columns.
-
-# comparison graphs for nee
-
-filled2 %>%
-  filter(Year == 2020) %>% 
-  #filter(crop_year %in% c("18/19", "19/20", "20/21"))%>% 
-  #filter(crop_year %in% c("18/19", "19/20", "20/21", "21/22", "22/23", "23/24"))%>% 
-  
-  ggplot()+
-   # geom_line(aes(x = doy, y = nee_obs), color = "black", linetype = 1, size = 1, alpha = 0.5)+ # nirmani
-   # geom_line(aes(x = doy, y = nee), size = 1, color = "#0072B2", alpha = 0.5)+ # new
-   # 
-  #geom_line(aes(x = doy, y = gpp_obs), size = 1, color = "black", alpha = 0.75)+ # nirmani
-  # geom_line(aes(x = doy, y = -gpp_nt), color = "blue", linetype = 1, size = 1, alpha = 0.5)+ #new
-  # geom_line(aes(x = doy, y = -gpp_dt), color = "darkorange", linetype = 1, size = 1, alpha = 0.5)+ # new
-
-  #geom_line(aes(x = doy, y = resp_obs), size = 1, color = "black", alpha = 0.75)+ # nirmani
-  geom_line(aes(x = doy, y = re_nt), color = "blue", linetype = 1, size = 1, alpha = 0.5)+ #new
-  geom_line(aes(x = doy, y = re_dt), color = "darkorange", linetype = 1, size = 1, alpha = 0.5)+ # new
-
-  facet_wrap(Year~., nrow = 4)+
-  ylab("Reco (g C m-2 day-1)")+
-  #ylab("NEE (g C m-2 day-1)")+
-  #ylab("Reco (g C m-2 30-min-1)")+
-  #ylab("GPP (g C m-2 30-min-1)")+
-  
-  #geom_line(aes(x = doy, y = tair), color = "red", linetype = 1, size = 1, alpha = 0.5)+ # new
-  geom_line(aes(x = doy, y = nee), color = "darkgreen", linetype = 1, size = 1, alpha = 0.5)+ # new
- # geom_point(aes(x = doy, y = rg), color = "purple", linetype = 1, size = 1, alpha = 0.5)+ # new
-  
-  labs(
-    title ="Reco",
-    subtitle = "Comparison daytime (yellow) and nightime (blue) partitioning methods"
-  )+
-  
-  theme_bw()+
-  theme(
-    legend.position = "bottom"
-  )
-
-ggsave("reco_daily_p12_new.png", width = 10, height = 7)
-
-
-CombinedData %>% 
-  filter(Year == 2020 & doy %in% 100:300) %>% 
-  group_by(doy) %>% 
-  summarise(
-    Rg = mean(Rg),
-    Tair = mean(Tair),
-    NEE_U50_f = mean(NEE_U50_f),
-    GPP_U50_f = mean(GPP_U50_f),
-    Reco_U50 = mean(Reco_U95)
-  ) %>% 
-  ggplot()+
-  geom_point(aes(x=doy, y=Rg))+
-  geom_point(aes(x=doy, y=Reco_U50*10), color = "red")+
-  geom_point(aes(x=doy, y=Tair*10), color = "blue")+
-  geom_point(aes(x=doy, y=NEE_U50_f*10), color = "darkgreen")
-
-
-
-ggplot( )+
-  #geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140), aes(x = doy, y = NEE))+
-  geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140  ), aes(x = doy, y = NEE_uStar_f), color = "blue", alpha = 0.2)+
-  geom_point(data = filter(CombinedData, Year==2021 & doy %in% 130:140 & NEE_uStar_fqc <2 ), aes(x = doy, y = NEE_uStar_f), color = "red", alpha = 0.2)+
-  
-  
-  theme_bw()
-
-NEE_U50_f_HQ<-CombinedData %>% 
-  filter(Year==2021 & doy %in% 130:140 & NEE_U50_fqc <2 ) %>% 
-  group_by(doy, Year) %>%
-  summarise(
-    NEE_hq = mean(NEE_U50_f, na.rm = TRUE)
-  )
-
-CombinedData %>% 
-  group_by(Year) %>%
-  summarise(
-    total = n(),
-    prop_1 = sum(NEE_U50_fqc == 1) / total*100,
-    prop_2 = sum(NEE_U50_fqc == 2) / total*100,
-    prop_3 = sum(NEE_U50_fqc == 3) / total*100,
-    prop_4 = sum(NEE_U50_fqc == 4) / total*100
-  )
-
-
-CombinedData %>% 
-  filter(Year==2020) %>%
-  filter(doy %in% 1:365) %>%
-  group_by(doy, Year) %>%
-  summarise(
-    NEE = mean(NEE, na.rm = TRUE),
-    
-    NEE_U50_f = mean(NEE_U50_f),
-    
-    GPP_U50 = mean(GPP_U50_f),
-    Reco_U50 = mean(Reco_U50),
-
-    GPP_DT_U50 = mean(GPP_DT_U50),
-    Reco_DT_U50 = mean(Reco_DT_U50),
-
-    Tair = mean(Tair),
-    vpd = mean(VPD),
-    rg = mean(Rg)/10
-  ) %>%
-  ggplot()+
-  #geom_line(aes(x = doy, y = NEE_U50_f, alhpa = 0.5), color = "blue",linewidth = 1)+
-  geom_line(aes(x = doy, y = NEE, alhpa = 0.5), color = "blue",linewidth = 1)+
-  #geom_line(data = NEE_U50_f_HQ, aes(x = doy, y = NEE_hq, alhpa = 0.5), color = "green",linewidth = 1)+
-  
-  # geom_line(aes(x = doy, y = -GPP_DT_U50, alhpa = 0.5), color = "black", linewidth = 1)+
-  # geom_line(aes(x = doy, y = Reco_DT_U50, alpha = 0.5), color = "purple", linewidth = 1)+
-  
-  geom_line(aes(x = doy, y = -GPP_U50, alhpa = 0.5), color = "black", linewidth = 1)+
-  geom_line(aes(x = doy, y = Reco_U50, alpha = 0.5), color = "red", linewidth = 1)+
-  
-  geom_line(aes(x = doy, y = Tair, alpha = 0.5), color = "purple", linewidth = 1)+
-  #geom_line(aes(x = doy, y = vpd, alpha = 0.5), color = "lightblue", linewidth = 1)+
-  #geom_line(aes(x = doy, y = rg, alpha = 0.5), color = "darkgreen", linewidth = 1)+
-  
-  theme_bw()+
-  facet_wrap(Year~.)
-
-
-CombinedData %>% 
-  filter(Year==2020) %>%
-  #filter(doy %in% 200:250) %>%
-  ggplot()+
-  #geom_line(aes(x = doy, y = -GPP_DT_uStar, alhpa = 0.5), linewidth = 1)+
-  geom_point(aes(x = doy, y = NEE_uStar_f, alhpa = 0.5), color = "blue",linewidth = 1)+
-  geom_point(aes(x = doy, y = NEE_uStar_orig, alhpa = 0.5), linewidth = 1)+
-  #geom_line(aes(x = doy, y = Tair, alpha = 0.5), color = "red", linewidth = 1)+
-  #geom_line(aes(x = doy, y = vpd, alpha = 0.5), color = "lightblue", linewidth = 1)+
-  #geom_point(aes(x = doy, y = Rg, alpha = 0.5), color = "darkgreen", linewidth = 1)+
-  geom_line(aes(x = doy, y = Reco_DT_uStar, alpha = 0.5), color = "purple", linewidth = 1)+
-  geom_line(aes(x = doy, y = Reco_uStar, alpha = 0.5), color = "red", linewidth = 1)+
-  
-  theme_bw()
-
-sum(!is.na(CombinedData$NEE_uStar_orig))
-
-ggplot()+
-  # geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_DT_uStar))+
-  # geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_DT_uStar), color = "blue")+
-  geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_uStar))+
-  geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = Reco_uStar), color = "blue")+
-  # geom_point(data =  filter(CombinedData, is.na(NEE_uStar_orig)), aes(x = DoY, y = NEE_uStar_f))+
-  # geom_point(data =  filter(CombinedData, !is.na(NEE_uStar_orig)), aes(x = DoY, y = NEE_uStar_f), color = "blue")+
-  theme_bw()
-
-CombinedData %>% 
-  filter(Year == 2019 & doy %in% c(250:280)) %>%
-  summarise(
-    n = sum(is.na(NEE_uStar_orig))
-  )
-  
-# checking data 
-
-CombinedData_p12$Reco_DT_U50
-
-CombinedData_p12 %>% 
-  filter(Year == 2020 & doy %in% c(100:250)) %>%
-  # mutate(
-  # 
-  #   NEE_gC = NEE_uStar_f * conv_factor,
-  # 
-  #   GPP_uStar_f_gC = GPP_uStar_f * conv_factor, # nighttime method
-  #   Reco_uStar_gC = Reco_uStar * conv_factor, # nighttime method
-  # 
-  #   GPP_DT_uStar_gC = GPP_DT_uStar * conv_factor, # daytime method
-  #   Reco_DT_uStar_gC = Reco_DT_uStar * conv_factor # daytime method
-  # 
-  # ) %>%
-  # mutate(
-  #   
-  #   NEE_gC = NEE_uStar_f * conv_factor,
-  #   
-  #   GPP_uStar_f_gC = GPP_U50_f * conv_factor, # nighttime method
-  #   Reco_uStar_gC = Reco_U50 * conv_factor, # nighttime method
-  #   
-  #   GPP_DT_uStar_gC = GPP_DT_U50 * conv_factor, # daytime method
-  #   Reco_DT_uStar_gC = Reco_DT_U50 * conv_factor # daytime method
-  #   
-  # ) %>% 
-  group_by(doy) %>% 
-  # summarise(
-  #   GPP_uStar_f_gC = sum(GPP_uStar_f_gC),
-  #   GPP_DT_uStar_gC = sum(GPP_DT_uStar_gC)
-  # ) %>% 
-  summarise(
-    GPP_uStar_f_gC = mean(GPP_uStar_f),
-    GPP_DT_uStar_gC = mean(GPP_DT_uStar),
-    NEE = mean(NEE, na.rm = T),
-    LE = mean(LE, na.rm = T),
-    H = mean(H, na.rm = T),
-    Tair = mean(Tair, na.rm = T),
-    RH = mean(RH, na.rm = T),
-    VPD = mean(NEE, na.rm = T),
-    Rg = mean(Rg, na.rm = T),
-    Rg_f = mean(Rg_f, na.rm = T),
-    Tair_f= mean(Tair_f)
-  ) %>% 
-  ggplot()+
-  geom_line(aes(x = doy, y = -GPP_uStar_f_gC), color = "blue", linewidth=1)+
-  geom_line(aes(x = doy, y = -GPP_DT_uStar_gC), color = "orange", linewidth=1)+
-  #geom_point(aes(x = doy, y = NEE, alpha = 0.5), color = "red", linewidth=1)+
-  #geom_point(aes(x = doy, y = -LE, alpha = 0.5), color = "red", linewidth=1)+
-  #geom_line(aes(x = doy, y = H, alpha = 0.5), color = "red", linewidth=1)+
-  # geom_line(aes(x = doy, y = -Tair, alpha = 0.5), color = "red", linewidth=1)+
-  # geom_line(aes(x = doy, y = -Tair_f, alpha = 0.5), color = "blue", linewidth=1)+
-  # geom_line(aes(x = doy, y = -Rg/10, alpha = 0.5), color = "red", linewidth=1)+
-  # geom_line(aes(x = doy, y = -Rg_f/10, alpha = 0.5), color = "blue", linewidth=1)+
-  geom_line(aes(x = doy, y = VPD, alpha = 0.5), color = "red", linewidth=1)+
-  theme_bw()
-
-CombinedData_p12$Rg_f
-CombinedData_p12$LE
-CombinedData_p12$H
-CombinedData_p12$Tair
-CombinedData_p12$RH
-CombinedData_p12$VPD
-CombinedData_p12$Rg
-
-GPP_DT_uStar
-
-CombinedData_p12 %>% 
-  filter(Year == 2020 & doy %in% c(100:250)) %>%
-  group_by(doy) %>%
-  summarise(
-    Rg = mean(Rg, na.rm = T)
-  ) %>%
-  ggplot()+
-  geom_line(aes(x = doy, y = Rg/10))+
-  geom_point(data = filter(CombinedData_p12, Year == 2020 & doy %in% c(100:250) ), aes(x = doy, y = Reco_uStar, alpha = 0.1), color = "blue", linewidth=1)+
-  geom_point(data = filter(CombinedData_p12, Year == 2020 & doy %in% c(100:250) ), aes(x = doy, y = Reco_DT_uStar, alpha = 0.1), color = "orange", linewidth=1)+
-  theme_bw()
-
-CombinedData_p12 %>% 
-  filter(Year == 2023 & doy %in% c(150:200)) %>%
-  group_by(doy) %>%
-  summarise(
-    Rg = mean(Rg, na.rm = T),
-    GPP_uStar_f = mean(GPP_uStar_f),
-    GPP_DT_uStar = mean(GPP_DT_uStar)
-  ) %>%
-  ggplot()+
-  geom_line(aes(x = doy, y = Rg/10))+
-  # geom_point(data = filter(CombinedData_p12, Year == 2023 & doy %in% c(150:200) ), aes(x = doy, y = GPP_uStar_f, alpha = 0.1), color = "blue", linewidth=1)+
-  # geom_point(data = filter(CombinedData_p12, Year == 2023 & doy %in% c(150:200) ), aes(x = doy, y =GPP_DT_uStar , alpha = 0.1), color = "orange", linewidth=1)+
-  geom_line(aes(x = doy, y = GPP_uStar_f, alpha = 0.1), color = "blue", linewidth=1)+
-  geom_line(aes(x = doy, y =GPP_DT_uStar , alpha = 0.1), color = "orange", linewidth=1)+
-  theme_bw()
-
-
-# # comparison graphs for respiration
-# 
-# combined%>% 
-#   ggplot(aes(x = doy, y = resp))+
-#   geom_line(size = 1, color = "black", alpha = 0.75)+
-#   geom_line(aes(x = doy, y = resp_obs), color = "#D55E00", linetype = 1, size = 1, alpha = 0.5)+
-#   facet_wrap(year~., nrow = 6)+
-#   theme_bw()+
-#   geom_vline(data = filter(seasonStarts2, year %in% c(2023:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
-# 
-# # comparison graphs for gpp
-# 
-# combined%>% 
-#   ggplot(aes(x = doy, y = gpp*(-1)))+
-#   geom_line(size = 1, color = "black", alpha = 0.75)+
-#   geom_line(aes(x = doy, y = gpp_obs), color = "#009E73", linetype = 1, size = 1, alpha = 0.5)+
-#   facet_wrap(year~., nrow = 6)+
-#   theme_bw()+
-#   geom_vline(data = filter(seasonStarts2, year %in% c(2023:2021)), aes(xintercept = doy), color = "red", linetype = "dashed") 
-# 
-# # graphing the sum of the fluxes across the entire year
-# 
-# # new dataset
-# 
-# combined_inner <- new_co2 %>% 
-#   filter(plot == 1) %>% 
-#   inner_join(filled, by = c("year", "doy")) # full join keeps only those points that are present in both datasets.
-# 
-# # merged graph
-# 
-# combined_inner %>% 
-#   filter(year %in% c(2023:2021)) %>%
-#   group_by(year) %>% 
-#   summarise(
-#     nee = sum(nee),
-#     gpp = sum(gpp)*(-1),
-#     resp = sum(resp),
-#     nee_obs = sum(nee_obs),
-#     gpp_obs = sum(gpp_obs),
-#     resp_obs = sum(resp_obs)
-#   ) %>%
-#   pivot_longer(
-#     cols = -year,  # All columns except 'year'
-#     names_to = "variable",
-#     values_to = "value"
-#   ) %>%
-#   mutate(
-#     source = ifelse(grepl("_obs$", variable), "shannon", "reddyproc"),  # Add "old" or "new"
-#     variable = str_remove(variable, "_obs$")
-#   ) %>% 
-#   mutate(variable = factor(variable, levels = c("gpp", "resp", "nee"))) %>%  # Set the desired order
-#   ggplot(aes(x = source, y = value, fill = interaction(source, variable))) +  # Color based on interaction between source and variable
-#   geom_col(colour = "black") +
-#   scale_fill_manual(
-#     values = c(
-#       "reddyproc.gpp" = "gray", "shannon.gpp" = "#009E73", 
-#       "reddyproc.resp" = "gray", "shannon.resp" = "#D55E00", 
-#       "reddyproc.nee" = "gray", "shannon.nee" = "#0072B2", 
-#       "reddyproc" = "gray", "shannon" = "white"
-#     )
-#   ) +  # Set custom colors for the interaction between source and variable
-#   facet_grid(vars(variable), vars(year)) +
-#   theme_bw() +
-#   geom_text(aes(label = round(value, digits = 0)), vjust = 0.5) +  # Adjust text position if needed
-#   theme(
-#     axis.text.x = element_text(angle = 45, hjust = 1)
-#   ) +
-#   ylab("Annual cumulative C flux (g/m2/year)")
-
-
-#######################################################################
-
-#######################################################################
 ################## understanding conversion factors ###################
 
 # ─────────────────────────────────────────────────────────────
@@ -3282,7 +3283,7 @@ EddyData_2024_p1 <- fLoadTXTIntoDataframe("combined_ec_fg_full_data_allyear_p1_2
 
 # comparing with filtered vector that agustin had
 
-# filtered vector that agustin had
+# filtered vector that agustin had (block average)
 
 co2_p3_2022 <- read.table("obs_data/measured_co2/data_extraction/2025_05_01_new_data/2022/p3_tower/Filtered_vectors/co2_flux_filtered", header = FALSE, sep = "\t", stringsAsFactors = FALSE)
 co2_p3_2022 <- co2_p3_2022 %>% rename(NEE = V1)
@@ -3308,10 +3309,12 @@ ec_22_p3 <- ec_22_p3 %>%
 # file that jaison sent
 
 flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
-flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+flux_p3_05_2025_co2_jaison = flux_p3_05_2025_co2_jaison[-1,]
 flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
 flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
   mutate(DOY = round(as.numeric(DOY), 2))
+
+# graph 
 
 ec_22_p3 %>%
   left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
@@ -3322,6 +3325,8 @@ ec_22_p3 %>%
   geom_point()+
   geom_smooth(method = "lm")+
   theme_bw()
+
+# model 
 
 data=ec_22_p3 %>%
   left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
@@ -3354,13 +3359,13 @@ ec_22_p3 <- ec_22_p3 %>%
 ec_22_p3 <- ec_22_p3 %>%
   mutate(DOY = round(DOY, 2))
 
-# file that jaison sent
-
-flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
-flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
-flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
-flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
-  mutate(DOY = round(as.numeric(DOY), 2))
+# # file that jaison sent
+# 
+# flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
+# flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+# flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
+# flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
+#   mutate(DOY = round(as.numeric(DOY), 2))
 
 ec_22_p3 %>%
   left_join(flux_p3_05_2025_co2_jaison, by="DOY") %>% 
@@ -3390,12 +3395,12 @@ flux_p3_05_2025_co2_eddypro = flux_p3_05_2025_co2_eddypro %>%
 # file that jaison sent
 
 flux_p3_05_2025_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/EP__batch__2022-05-01-2022-05-31_eddypro_full_output__v20250902_00.csv", skip = 1, header = TRUE)
-flux_p3_05_2025_co2_jaison = flux_grad_p1_05_2025_co2[-1,]
+flux_p3_05_2025_co2_jaison = flux_p3_05_2025_co2_jaison[-1,]
 flux_p3_05_2025_co2_jaison$DOY = as.numeric(flux_p3_05_2025_co2_jaison$DOY)
 flux_p3_05_2025_co2_jaison <- flux_p3_05_2025_co2_jaison %>%
   mutate(DOY = round(as.numeric(DOY), 4))
 
-flux_p3_05_2025_co2 %>%
+flux_p3_05_2025_co2_jaison %>%
   left_join(flux_p3_05_2025_co2_eddypro, by="DOY") %>% 
   filter(DOY>121 & DOY<160) %>%
   select(DOY, co2_flux, co2_flux2 ) %>%
@@ -3404,7 +3409,6 @@ flux_p3_05_2025_co2 %>%
   geom_point()+
   geom_smooth(method = "lm")+
   theme_bw()
-
 
 # comparing with filtered vector
 
@@ -3434,6 +3438,84 @@ ec_22_p3 <- ec_22_p3 %>%
 
 ec_22_p3 <- ec_22_p3 %>%
   mutate(DOY = round(DOY, 2))
+
+# comparing with new data that jaison sent for 2022 (all year)
+
+# 1. Define folder path
+folder <- "Z:/E26/database/ers4/2022/EC/EddyPro/P3_tower/EddyProOutputs/Full_output"
+
+# 2. List all EddyPro .csv files in that folder
+files <- list.files(folder, pattern = "\\.csv$", full.names = TRUE)
+
+# 3. Read, clean, and combine
+flux_all <- files %>%
+  map_dfr(~ {
+    df <- read.csv(.x, skip = 1, header = TRUE) %>%
+      slice(-1) %>%   # remove the first row
+      mutate(
+        DOY = round(as.numeric(DOY), 4),
+        co2_flux2 = co2_flux
+      ) %>%
+      select(DOY, co2_flux2)
+    
+    # Add filename info (optional, if you want to track source)
+    df$file <- basename(.x)
+    df
+  }) %>% 
+  filter(as.numeric(co2_flux2)>-30 & as.numeric(co2_flux2)<30)
+
+
+flux_all %>%
+  ggplot(aes(x=DOY, y=as.numeric(co2_flux2)))+
+  geom_point()
+
+# looking at the file with block average.
+
+flux_all <- read.csv("Z:/E26/database/ers4/Block Avg/2022/P3_tower/eddypro_Plot3_Jan_Dec_2022_full_output_2025-04-29T214921_adv.csv", skip = 1, header = TRUE)
+flux_all = flux_all[-1,]
+flux_all$DOY = as.numeric(flux_all$DOY)
+flux_all <- flux_all %>%
+  mutate(DOY = round(as.numeric(DOY), 4),
+         co2_flux2 = co2_flux
+         )%>% 
+  filter(as.numeric(co2_flux2)>-100 & as.numeric(co2_flux2)<100) %>% 
+  select(DOY, co2_flux2)
+
+
+
+# file that jaison sent
+
+flux_p3_2022_co2_jaison <- read.csv("C:/Users/aolivo/Downloads/E26__vs__CANFLUX_concat_2022-01-01-2022-12-31_eddypro_full_output.csv", skip = 1, header = TRUE)
+flux_p3_2022_co2_jaison = flux_p3_2022_co2_jaison[-1,]
+flux_p3_2022_co2_jaison$DOY = as.numeric(flux_p3_2022_co2_jaison$DOY)
+flux_p3_2022_co2_jaison <- flux_p3_2022_co2_jaison %>%
+  mutate(DOY = round(as.numeric(DOY), 4))
+
+flux_p3_2022_co2_jaison %>%
+  filter(as.numeric(co2_flux)>-100 & as.numeric(co2_flux)<100) %>% 
+  ggplot(aes(x=DOY, y=as.numeric(co2_flux)))+
+  geom_point()
+
+# comparison with raw eddypro outputs from database
+
+flux_p3_2022_co2_jaison %>%
+  filter(as.numeric(co2_flux)>-100 & as.numeric(co2_flux)<100) %>% 
+  left_join(flux_all, by="DOY") %>% 
+  filter(DOY>121 & DOY<160) %>%
+  select(DOY, co2_flux, co2_flux2 ) %>%
+  filter(!co2_flux<abs(1000)) %>% 
+  ggplot(aes(x = as.numeric(co2_flux), y = as.numeric(co2_flux2)))+
+  geom_point()+
+  #geom_smooth(method = "lm")+
+  theme_bw()
+
+flux_p3_2022_co2_jaison %>%
+  filter(as.numeric(co2_flux)>-100 & as.numeric(co2_flux)<100) %>% 
+  left_join(flux_all, by="DOY") %>% 
+  ggplot()+
+  geom_point(aes(x = DOY, y=as.numeric(co2_flux)), color="darkblue", alpha=0.3)+
+  geom_point(aes(x = DOY, y=as.numeric(co2_flux2)), color="green", alpha=0.3)+
+  theme_bw()
 
 #######################################################################
 ####################### old ###########################################
